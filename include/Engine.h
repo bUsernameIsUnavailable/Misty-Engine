@@ -8,9 +8,10 @@
 
 class Engine {
     static Scene* ActiveScene;
-    static std::vector<Scene*> Scenes;
+    static std::vector<Scene*>* Scenes;
     static WindowManager* WindowManager;
 
+    static void Initialise(int* Argcp, char** Argv, WindowConfig* Config);
     static void Run();
 
     static Scene* CreateScene();

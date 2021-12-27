@@ -11,7 +11,6 @@ Entity Scene::CreateEntity(const std::string& Tag) {
     Entity Entity(Registry->create(), this);
     Entity.AddComponent<TagComponent>(Tag.empty() ? "Entity" : Tag);
     Entity.AddComponent<TransformComponent>();
-    Entity.AddComponent<MeshComponent>();
     return Entity;
 }
 
