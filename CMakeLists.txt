@@ -31,20 +31,15 @@ endif(NOT glm_FOUND)
 
 find_library(SOIL_LIB SOIL.lib ${PROJECT_SOURCE_DIR}/lib/soil)
 
-execute_process(
-        COMMAND ${CMAKE_COMMAND} -E
-        create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/shaders
-        ${CMAKE_CURRENT_BINARY_DIR}/shaders
-)
-
-execute_process(
-        COMMAND ${CMAKE_COMMAND} -E
-        create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/textures
-        ${CMAKE_CURRENT_BINARY_DIR}/textures
-)
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${SOIL_LIB})
+
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+
+        COMMAND ${CMAKE_COMMAND} -E
+        create_symlink ${CMAKE_CURRENT_LIST_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
+)
