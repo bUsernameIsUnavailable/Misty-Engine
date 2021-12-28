@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(3D_scene)
+project(Misty)
 
 set(CMAKE_CXX_STANDARD 20)
 
