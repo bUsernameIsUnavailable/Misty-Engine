@@ -1,6 +1,8 @@
 #pragma once
 
 
-struct MeshComponent {
-    int Id = 0;
-};
+namespace MsT {
+    struct MeshComponent {
+        int Id = 0;
+    };
+}

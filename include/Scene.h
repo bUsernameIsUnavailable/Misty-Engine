@@ -5,13 +5,15 @@
 #include <Components.h>
 
 
-class Scene {
-    entt::registry* Registry = new entt::registry();
+namespace MsT {
+    class Scene {
+        entt::registry *Registry = new entt::registry();
 
-public:
-    ~Scene();
+    public:
+        ~Scene();
 
-    class Entity CreateEntity(const std::string& Tag);
+        class Entity CreateEntity(const std::string &Tag);
 
-    entt::registry* operator-> () const;
-};
+        entt::registry *operator->() const;
+    };
+}

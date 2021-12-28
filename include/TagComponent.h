@@ -3,6 +3,8 @@
 #include <xstring>
 
 
-struct TagComponent {
-    std::string Value;
-};
+namespace MsT {
+    struct TagComponent {
+        std::string Value;
+    };
+}

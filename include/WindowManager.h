@@ -6,9 +6,11 @@
 #include <unordered_map>
 
 
-class WindowManager {
-    std::unordered_map<GLint, WindowConfig*> Configs;
+namespace MsT {
+    class WindowManager {
+        std::unordered_map<GLint, WindowConfig *> Configs;
 
-public:
-    GLint Create(WindowConfig* Config);
-};
+    public:
+        GLint Create(WindowConfig *Config);
+    };
+}

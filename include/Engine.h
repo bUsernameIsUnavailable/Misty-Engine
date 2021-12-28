@@ -6,20 +6,23 @@
 #include <vector>
 
 
-class Engine {
-    static Scene* ActiveScene;
-    static std::vector<Scene*>* Scenes;
-    static WindowManager* WindowManager;
+namespace MsT {
+    class Engine {
+        static Scene *ActiveScene;
+        static std::vector<Scene *> *Scenes;
+        static WindowManager *WindowManager;
 
-    static void Initialise(int* Argcp, char** Argv, WindowConfig* Config);
-    static void Run();
+        static void Initialise(int *Argcp, char **Argv, WindowConfig *Config);
 
-    static Scene* CreateScene();
+        static void Run();
 
-    static void RenderUpdateCallback();
+        static Scene *CreateScene();
 
-public:
-    ~Engine();
+        static void RenderUpdateCallback();
 
-    static void Start(int* Argcp, char** Argv, WindowConfig* Config);
-};
+    public:
+        ~Engine();
+
+        static void Start(int *Argcp, char **Argv, WindowConfig *Config);
+    };
+}

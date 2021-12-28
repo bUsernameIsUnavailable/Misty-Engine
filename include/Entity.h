@@ -4,56 +4,60 @@
 #include <iostream>
 
 
-class Entity {
-    entt::entity EntityHandle = entt::null;
-    class Scene* Scene = nullptr;
+namespace MsT {
+    class Entity {
+        entt::entity EntityHandle = entt::null;
 
-public:
-    Entity() = default;
-    Entity(const entt::entity& EntityHandle, class Scene* Scene) {
-        this->EntityHandle = EntityHandle;
-        this->Scene = Scene;
-    }
+        class Scene *Scene = nullptr;
 
-    template<typename T, typename... Args>
-    T* AddComponent(Args&&... Arguments) {
-        if (HasAnyComponent<T>()) {
-            std::cerr << "Entity already has " + std::string(typeid(T).raw_name()) + "!\n";
-            return GetComponent<T>();
+    public:
+        Entity() = default;
+
+        Entity(const entt::entity &EntityHandle, class Scene *Scene) {
+            this->EntityHandle = EntityHandle;
+            this->Scene = Scene;
         }
 
-        return &(*Scene)->emplace<T>(EntityHandle, std::forward<Args>(Arguments)...);
-    }
+        template<typename T, typename... Args>
+        T *AddComponent(Args &&... Arguments) {
+            if (HasAnyComponent<T>()) {
+                std::cerr << "Entity already has " + std::string(typeid(T).raw_name()) + "!\n";
+                return GetComponent<T>();
+            }
 
-    template<typename T>
-    T* GetComponent() const {
-        if (!HasAllComponents<T>()) {
-            std::cerr << "Entity doesn't have " + std::string(typeid(T).raw_name()) + "!\n";
-            return nullptr;
+            return &(*Scene)->emplace<T>(EntityHandle, std::forward<Args>(Arguments)...);
         }
 
-        return &(*Scene)->get<T>(EntityHandle);
-    }
+        template<typename T>
+        T *GetComponent() const {
+            if (!HasAllComponents<T>()) {
+                std::cerr << "Entity doesn't have " + std::string(typeid(T).raw_name()) + "!\n";
+                return nullptr;
+            }
 
-    template<typename T>
-    void RemoveComponent() {
-        if (!HasAllComponents<T>()) {
-            std::cerr << "Entity doesn't have " + std::string(typeid(T).raw_name()) + "!\n";
-            return;
+            return &(*Scene)->get<T>(EntityHandle);
         }
 
-        (*Scene)->remove<T>(EntityHandle);
-    }
+        template<typename T>
+        void RemoveComponent() {
+            if (!HasAllComponents<T>()) {
+                std::cerr << "Entity doesn't have " + std::string(typeid(T).raw_name()) + "!\n";
+                return;
+            }
 
-    template<typename... Args>
-    [[nodiscard]] bool HasAnyComponent() const {
-        return (*Scene)->any_of<Args...>(EntityHandle);
-    }
+            (*Scene)->remove<T>(EntityHandle);
+        }
 
-    template<typename... Args>
-    [[nodiscard]] bool HasAllComponents() const {
-        return (*Scene)->all_of<Args...>(EntityHandle);
-    }
+        template<typename... Args>
+        [[nodiscard]] bool HasAnyComponent() const {
+            return (*Scene)->any_of<Args...>(EntityHandle);
+        }
 
-    explicit operator bool() const { return EntityHandle != entt::null; }
-};
+        template<typename... Args>
+        [[nodiscard]] bool HasAllComponents() const {
+            return (*Scene)->all_of<Args...>(EntityHandle);
+        }
+
+        explicit operator bool() const { return EntityHandle != entt::null; }
+    };
+}
