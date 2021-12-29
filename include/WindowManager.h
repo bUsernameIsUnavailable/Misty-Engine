@@ -8,9 +8,9 @@
 
 namespace MsT {
     class WindowManager {
-        std::unordered_map<GLint, WindowConfig *> Configs;
+        std::unordered_map<GLint, WindowConfig*> Configs;
 
     public:
-        GLint Create(WindowConfig *Config);
+        GLint Create(WindowConfig* Config);
     };
 }

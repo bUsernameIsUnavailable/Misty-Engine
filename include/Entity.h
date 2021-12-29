@@ -8,7 +8,7 @@ namespace MsT {
     class Entity {
         entt::entity EntityHandle = entt::null;
 
-        class Scene *Scene = nullptr;
+        class Scene* Scene = nullptr;
 
     public:
         Entity() = default;
@@ -19,7 +19,7 @@ namespace MsT {
         }
 
         template<typename T, typename... Args>
-        T *AddComponent(Args &&... Arguments) {
+        T* AddComponent(Args&&... Arguments) {
             if (HasAnyComponent<T>()) {
                 std::cerr << "Entity already has " + std::string(typeid(T).raw_name()) + "!\n";
                 return GetComponent<T>();
@@ -29,7 +29,7 @@ namespace MsT {
         }
 
         template<typename T>
-        T *GetComponent() const {
+        T* GetComponent() const {
             if (!HasAllComponents<T>()) {
                 std::cerr << "Entity doesn't have " + std::string(typeid(T).raw_name()) + "!\n";
                 return nullptr;

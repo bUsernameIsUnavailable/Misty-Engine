@@ -14,10 +14,10 @@ namespace MsT {
         unsigned int DisplayMode{};
 
         explicit WindowConfig(
-                const std::string &Title,
-                const glm::ivec2 &Size = {640, 360},
-                const glm::ivec2 &Position = {500, 200},
-                unsigned int DisplayMode = GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH
+                const std::string& Title,
+                const glm::ivec2& Size = { 640, 360 },
+                const glm::ivec2& Position = { 500, 200 },
+                unsigned int DisplayMode = GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH
         );
     };
 }

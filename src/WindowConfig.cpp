@@ -3,9 +3,9 @@
 
 namespace MsT {
     WindowConfig::WindowConfig(
-            const std::string &Title,
-            const glm::ivec2 &Size,
-            const glm::ivec2 &Position,
+            const std::string& Title,
+            const glm::ivec2& Size,
+            const glm::ivec2& Position,
             const unsigned int DisplayMode
     ) {
         this->Title = Title;
