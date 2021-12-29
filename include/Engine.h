@@ -9,7 +9,7 @@
 namespace MsT {
     class Engine {
         static Scene* ActiveScene;
-        static std::vector<Scene*>* Scenes;
+        static std::vector<Scene*> Scenes;
         static WindowManager* WindowManager;
 
         static void Run();

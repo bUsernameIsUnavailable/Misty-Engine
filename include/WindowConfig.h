@@ -9,9 +9,9 @@
 namespace MsT {
     struct WindowConfig {
         std::string Title;
-        glm::ivec2 Size{};
-        glm::ivec2 Position{};
-        unsigned int DisplayMode{};
+        glm::ivec2 Size;
+        glm::ivec2 Position;
+        unsigned int DisplayMode;
 
         explicit WindowConfig(
                 const std::string& Title,

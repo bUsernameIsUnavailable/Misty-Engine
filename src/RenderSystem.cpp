@@ -140,9 +140,9 @@ namespace MsT {
         auto* const Ebos = new GLuint[PrefabCount];
 
         for (GLsizei Index = 0u; Index < PrefabCount; ++Index) {
-            Vaos[Index] = Prefabs.at(Index).Vao;
-            Vbos[Index] = Prefabs.at(Index).Vbo;
-            Ebos[Index] = Prefabs.at(Index).Ebo;
+            Vaos[Index] = Prefabs[Index].Vao;
+            Vbos[Index] = Prefabs[Index].Vbo;
+            Ebos[Index] = Prefabs[Index].Ebo;
         }
 
         glDisableVertexAttribArray(2u);
