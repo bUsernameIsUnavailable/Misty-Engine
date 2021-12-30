@@ -1,16 +1,12 @@
 #pragma once
 
+#include <ConfigManager.h>
 #include <WindowConfig.h>
-
-#include <OpenGL.h>
-#include <unordered_map>
 
 
 namespace MsT {
-    class WindowManager {
-        std::unordered_map<GLint, WindowConfig*> Configs;
-
+    class WindowManager : public utils::ConfigManager<WindowConfig, GLint> {
     public:
-        GLint Create(WindowConfig* Config);
+        void Create(WindowConfig* Config) override;
     };
 }

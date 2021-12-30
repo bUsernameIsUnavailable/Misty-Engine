@@ -1,5 +1,6 @@
 #include <Engine.h>
 #include <RenderSystem.h>
+#include <ShaderConfig.h>
 
 
 namespace client {
@@ -8,46 +9,50 @@ namespace client {
 
 
 int main(int argc, char** const argv) {
-    MsT::Engine::Initialise(&argc, argv, new MsT::WindowConfig(
+    MsT::Engine::Initialise(&argc, argv);
+
+    MsT::Engine::RegisterWindow(new MsT::WindowConfig(
             "Misty Engine - 3D Scene",
             { 1280, 720 },
             { 100, 30 }
     ));
-
-    MsT::RenderSystem::MakeShader("../resources/shaders/shader.vert", "../resources/shaders/shader.frag");
+    MsT::Engine::RegisterShader(new MsT::ShaderConfig(
+            "../resources/shaders/shader.vert",
+            "../resources/shaders/shader.frag"
+    ), { "ViewMatrix", "ProjectionMatrix", "ColourCode" });
 
     MsT::Entity Cube = MsT::Engine::MakeEntity("Cube");
     MsT::MeshComponent& Mesh = *Cube.AddComponent<MsT::MeshComponent>(
             std::vector<GLfloat>({
-                -0.5f, -0.5f, 0.5f, 1.0f,
+                -50.0f, -50.0f, 50.0f, 1.0f,
                 0.0f, 0.5f, 0.9f, 0.5f,
                 -1.0f, -1.0f, -1.0f,
 
-                0.5f, -0.5f, 0.5f, 1.0f,
+                50.0f, -50.0f, 50.0f, 1.0f,
                 0.0f, 0.5f, 0.9f, 0.5f,
                 1.0f, -1.0f, -1.0f,
 
-                0.5f, 0.5f, 0.5f, 1.0f,
+                50.0f, 50.0f, 50.0f, 1.0f,
                 0.0f, 0.5f, 0.9f, 0.5f,
                 1.0f, 1.0f, -1.0f,
 
-                -0.5f, 0.5f, 0.5f, 1.0f,
+                -50.0f, 50.0f, 50.0f, 1.0f,
                 0.0f, 0.5f, 0.9f, 0.5f,
                 -1.0f, 1.0f, -1.0f,
 
-                -0.5f, -0.5f, 1.5f, 1.0f,
+                -50.0f, -50.0f, 150.0f, 1.0f,
                 0.0f, 0.5f, 0.9f, 0.5f,
                 -1.0f, -1.0f, 1.0f,
 
-                0.5f, -0.5f, 1.5f, 1.0f,
+                50.0f, -50.0f, 150.0f, 1.0f,
                 0.0f, 0.5f, 0.9f, 0.5f,
                 1.0f, -1.0f, 1.0f,
 
-                0.5f, 0.5f, 1.5f, 1.0f,
+                50.0f, 50.0f, 150.0f, 1.0f,
                 0.0f, 0.5f, 0.9f, 0.5f,
                 1.0f, 1.0f, 1.0f,
 
-                -0.5f, 0.5f, 1.5f, 1.0f,
+                -50.0f, 50.0f, 150.0f, 1.0f,
                 0.0f, 0.5f, 0.9f, 0.5f,
                 -1.0f, 1.0f, 1.0f
             }),

@@ -9,8 +9,8 @@ out vec4 gl_Position;
 out vec4 ex_Color;
 
 uniform mat4 matrUmbra;
-uniform mat4 view;
-uniform mat4 projection;
+uniform mat4 ViewMatrix;
+uniform mat4 ProjectionMatrix;
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform vec3 objectColor;
@@ -21,16 +21,15 @@ uniform int ColourCode;
 void main() {
     switch (ColourCode) {
         case 1:
-            gl_Position = projection * view * matrUmbra * in_Position;
+            gl_Position = ProjectionMatrix * ViewMatrix * matrUmbra * in_Position;
             break;
 
         default: {
-            gl_Position = in_Position;/*
-            gl_Position = projection * view * in_Position;
-            vec3 Normal = mat3(projection * view) * in_Normal;
+            gl_Position = ProjectionMatrix * ViewMatrix * in_Position;/*
+            vec3 Normal = mat3(ProjectionMatrix * ViewMatrix) * in_Normal;
             vec3 Normal = in_Normal;
-            vec3 inLightPos = vec3(projection * view * vec4(lightPos, 1.0f));
-            vec3 inViewPos = vec3(projection * view * vec4(viewPos, 1.0f));
+            vec3 inLightPos = vec3(ProjectionMatrix * ViewMatrix * vec4(lightPos, 1.0f));
+            vec3 inViewPos = vec3(ProjectionMatrix * ViewMatrix * vec4(viewPos, 1.0f));
             vec3 FragPos = vec3(gl_Position);
 
             // Ambient

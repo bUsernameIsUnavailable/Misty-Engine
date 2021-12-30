@@ -1,30 +1,50 @@
 #include <RenderSystem.h>
 #include <Scene.h>
 
-#include <string>
-#include <fstream>
+#include <glm/gtc/matrix_transform.hpp>
 
 
 namespace MsT {
-    std::vector<GLuint> RenderSystem::Programs = std::vector<GLuint>();
+    ShaderManager* RenderSystem::ShaderManager = nullptr;
     std::vector<MeshComponent> RenderSystem::Prefabs = std::vector<MeshComponent>();
 
 
     void RenderSystem::Update(Scene* const Scene) {
+        glUseProgram((*ShaderManager)[0u]->GetId());
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
+
+        glUniformMatrix4fv(
+                (*(*ShaderManager)[0u])["ViewMatrix"],
+                1u,
+                GL_FALSE,
+                &glm::lookAt(
+                        glm::vec3(100.0f, -600.0f, 300.0f),
+                        glm::vec3(0.0f, 1000.0f, 0.0f),
+                        glm::vec3(0.0f, 0.0f, 1.0f)
+                )[0u][0u]
+        );
+
+        glUniformMatrix4fv(
+                (*(*ShaderManager)[0u])["ProjectionMatrix"],
+                1u,
+                GL_FALSE,
+                &glm::infinitePerspective(45.0f, 4.0f / 3.0f, 0.1f)[0u][0u]
+        );
 
         for (const auto& [
             Entity,
             Mesh
         ]: (*Scene)->view<const MeshComponent>().each()
         ) {
-            glEnable(GL_BLEND);
             glDepthMask(GL_FALSE);
+            glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
-            glDrawElements(GL_TRIANGLES, 36u, GL_UNSIGNED_INT, nullptr);
-            glDepthMask(GL_TRUE);
+
+            glDrawElements(GL_TRIANGLES, (GLsizei) Mesh.Indices.size(), GL_UNSIGNED_INT, nullptr);
+
             glDisable(GL_BLEND);
+            glDepthMask(GL_TRUE);
         }
 
         glutSwapBuffers();
@@ -56,83 +76,6 @@ namespace MsT {
         Prefabs.push_back(Mesh);
     }
 
-    void RenderSystem::MakeShader(const std::string& VertexFilePath, const std::string& FragmentFilePath) {
-        const GLuint& VertexId = glCreateShader(GL_VERTEX_SHADER);
-        const GLuint& FragmentId = glCreateShader(GL_FRAGMENT_SHADER);
-
-        std::string VertexCode;
-        std::ifstream VertexStream(VertexFilePath.c_str(), std::ios::in);
-        if (VertexStream.is_open())
-        {
-            std::string Line;
-            while (std::getline(VertexStream, Line)) {
-                VertexCode += Line + "\n";
-            }
-            VertexStream.close();
-        }
-
-        std::string FragmentCode;
-        std::ifstream FragmentStream(FragmentFilePath.c_str(), std::ios::in);
-        if (FragmentStream.is_open())
-        {
-            std::string Line;
-            while (std::getline(FragmentStream, Line)) {
-                FragmentCode += Line + "\n";
-            }
-            FragmentStream.close();
-        }
-
-        GLint Result = GL_FALSE;
-        GLint LogLength;
-
-        const char* const VertexSource = VertexCode.c_str();
-        std::printf("Compiling shader: %s\n", VertexFilePath.c_str());
-        glShaderSource(VertexId, 1u, &VertexSource , nullptr);
-        glCompileShader(VertexId);
-
-        glGetShaderiv(VertexId, GL_COMPILE_STATUS, &Result);
-        glGetShaderiv(VertexId, GL_INFO_LOG_LENGTH, &LogLength);
-        std::vector<GLchar> VertexError(LogLength);
-        if (!Result)
-        {
-            glGetShaderInfoLog(VertexId, LogLength, nullptr, &VertexError[0u]);
-            std::fprintf(stdout, "%s\n", &VertexError[0u]);
-        }
-
-        const char* const FragmentSource = FragmentCode.c_str();
-        printf("Compiling shader: %s\n", FragmentFilePath.c_str());
-        glShaderSource(FragmentId, 1u, &FragmentSource , nullptr);
-        glCompileShader(FragmentId);
-
-        glGetShaderiv(FragmentId, GL_COMPILE_STATUS, &Result);
-        glGetShaderiv(FragmentId, GL_INFO_LOG_LENGTH, &LogLength);
-        std::vector<GLchar> FragmentError(LogLength);
-        if(!Result)
-        {
-            glGetShaderInfoLog(FragmentId, LogLength, nullptr, &FragmentError[0u]);
-            std::fprintf(stdout, "%s\n", &FragmentError[0u]);
-        }
-
-        const GLuint& ProgramId = glCreateProgram();
-        std::fprintf(stdout, "Binding program: %u\n", ProgramId);
-        glAttachShader(ProgramId, VertexId);
-        glAttachShader(ProgramId, FragmentId);
-        glLinkProgram(ProgramId);
-
-        glGetProgramiv(ProgramId, GL_LINK_STATUS, &Result);
-        glGetProgramiv(ProgramId, GL_INFO_LOG_LENGTH, &LogLength);
-        std::vector<GLchar> ProgramError(std::max(LogLength, 1));
-        if(!Result)
-        {
-            glGetProgramInfoLog(ProgramId, LogLength, nullptr, &ProgramError[0u]);
-            std::fprintf(stdout, "%s\n", &ProgramError[0u]);
-        }
-
-        glDeleteShader(FragmentId);
-        glDeleteShader(VertexId);
-        Programs.push_back(ProgramId);
-    }
-
     void RenderSystem::Cleanup() {
         const GLsizei& PrefabCount = (GLsizei) Prefabs.size();
         auto* const Vaos = new GLuint[PrefabCount];
@@ -160,8 +103,6 @@ namespace MsT {
         delete[] Vbos;
         delete[] Vaos;
 
-        for (const GLuint& Program : Programs) {
-            glDeleteProgram(Program);
-        }
+        delete ShaderManager;
     }
 }
