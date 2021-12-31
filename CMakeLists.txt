@@ -31,12 +31,12 @@ endif(NOT glm_FOUND)
 
 find_library(SOIL_LIB SOIL.lib ${PROJECT_SOURCE_DIR}/lib/soil)
 
-include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+include_directories(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/include)
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp)
-
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-target_precompile_headers(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include/PCH.h)
+
 target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${SOIL_LIB})
+target_precompile_headers(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include/PCH.h)
 
 add_custom_command(
         TARGET ${PROJECT_NAME} POST_BUILD
