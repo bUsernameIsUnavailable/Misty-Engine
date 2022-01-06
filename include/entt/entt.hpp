@@ -39672,7 +39672,7 @@ template<typename Type, typename Node = typename Type::node_type>
 struct meta_range {
     /*! @brief Node type. */
     using node_type = Node;
-    /*! @brief Input iterator type. */
+    /*! @brief InputModule iterator type. */
     using iterator = internal::meta_range_iterator<Type, Node>;
     /*! @brief Constant input iterator type. */
     using const_iterator = iterator;
@@ -45349,7 +45349,7 @@ template<typename Type, typename Node = typename Type::node_type>
 struct meta_range {
     /*! @brief Node type. */
     using node_type = Node;
-    /*! @brief Input iterator type. */
+    /*! @brief InputModule iterator type. */
     using iterator = internal::meta_range_iterator<Type, Node>;
     /*! @brief Constant input iterator type. */
     using const_iterator = iterator;

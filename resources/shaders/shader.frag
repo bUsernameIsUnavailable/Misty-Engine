@@ -1,11 +1,11 @@
-#version 460
+#version 300 es
 
 
-in vec4 ex_Color;
+in lowp vec4 ex_Color;
 
-out vec4 out_Color;
+out lowp vec4 out_Color;
 
-uniform int ColourCode;
+uniform lowp int ColourCode;
 
 
 void main() {

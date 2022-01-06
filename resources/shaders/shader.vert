@@ -1,21 +1,20 @@
-#version 460
+#version 300 es
 
 
-layout(location = 0u) in vec4 in_Position;
-layout(location = 1u) in vec4 in_Color;
-layout(location = 2u) in vec3 in_Normal;
+layout(location = 0u) in mediump vec4 in_Position;
+layout(location = 1u) in lowp vec4 in_Color;
+layout(location = 2u) in lowp vec3 in_Normal;
 
-out vec4 gl_Position;
-out vec4 ex_Color;
+out lowp vec4 ex_Color;
 
-uniform mat4 matrUmbra;
-uniform mat4 ViewMatrix;
-uniform mat4 ProjectionMatrix;
-uniform vec3 lightPos;
-uniform vec3 viewPos;
-uniform vec3 objectColor;
-uniform vec4 lightColor;
-uniform int ColourCode;
+uniform highp mat4 ProjectionMatrix;
+uniform mediump mat4 ViewMatrix;
+uniform mediump mat4 matrUmbra;
+uniform mediump vec3 lightPos;
+uniform mediump vec3 viewPos;
+uniform lowp vec3 objectColor;
+uniform lowp vec4 lightColor;
+uniform lowp int ColourCode;
 
 
 void main() {
@@ -25,9 +24,8 @@ void main() {
             break;
 
         default: {
-            gl_Position = ProjectionMatrix * ViewMatrix * in_Position;/*
+            gl_Position = ProjectionMatrix * ViewMatrix * in_Position;
             vec3 Normal = mat3(ProjectionMatrix * ViewMatrix) * in_Normal;
-            vec3 Normal = in_Normal;
             vec3 inLightPos = vec3(ProjectionMatrix * ViewMatrix * vec4(lightPos, 1.0f));
             vec3 inViewPos = vec3(ProjectionMatrix * ViewMatrix * vec4(viewPos, 1.0f));
             vec3 FragPos = vec3(gl_Position);
@@ -51,8 +49,7 @@ void main() {
             float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 1.0f);
             vec4 specular = specularStrength * spec * lightColor;
 
-            ex_Color = (ambient + diffuse) * in_Color;*/
-            ex_Color = in_Color;
+            ex_Color = (ambient + diffuse) * in_Color;
         }
     }
 }
