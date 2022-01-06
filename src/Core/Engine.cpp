@@ -4,15 +4,20 @@
 namespace Misty::Core {
     bool Engine::bIsRunning = false;
     int Engine::WindowID = -1;
-    float Fps = 0.0f;
+
+    unsigned int Ticks = 1u;
+    float TotalFps = 1.0f / ClockModule::Get()->DeltaTime();
+    float AverageFps = 0.0f;
 
 
-    void TimedCallback(int Value = 1) {
+    void FpsCallback(int Value = 1) {
         if (Value == 0)
             return;
 
-        Fps = 1.0f / ClockModule::Get()->DeltaTime();
-        glutTimerFunc(1000u, TimedCallback, 1);
+        AverageFps = TotalFps / (float) Ticks;
+        TotalFps = 0.0f;
+        Ticks = 0u;
+        glutTimerFunc(100u, FpsCallback, 1);
     }
 
     void RedisplayCallback(int Value = 1) {
@@ -42,13 +47,19 @@ namespace Misty::Core {
 
         CHECK(glewInit() == GLEW_OK, "GLEW failed to initialise!");
 
-        glutIdleFunc([]() {}); //TODO
+        glutIdleFunc([]() noexcept {});
         glutDisplayFunc(renderFunction); //TODO
-        glutKeyboardFunc(processNormalKeys); //TODO
-        glutSpecialFunc(processSpecialKeys); //TODO
-        glutTimerFunc(0u, TimedCallback, 1);
+
+        glutTimerFunc(0u, FpsCallback, 1);
         glutTimerFunc(0u, RedisplayCallback, 1);
-        glutCloseFunc(Quit); //TODO
+
+        glutKeyboardFunc([](unsigned char Key, int X, int Y) noexcept {
+            InputModule::Get()->ProcessKeyboardKeys(Key, X, Y);
+        });
+        glutSpecialFunc([](const int Key, const int X, const int Y) noexcept {
+            InputModule::Get()->ProcessSpecialKeys(Key, X, Y);
+        });
+        glutCloseFunc(Quit);
     }
 
     void Engine::Start(int* const Argcp, char** const Argv) {
@@ -57,8 +68,6 @@ namespace Misty::Core {
         Initialise(Argcp, Argv);
         initialize(); //TODO
         bIsRunning = true;
-
-        Clock->Start();
     }
 
     void Engine::Update() {
@@ -107,52 +116,6 @@ namespace Misty::Core {
     // matrice
     glm::mat4 Engine::ViewMatrix, Engine::ProjectionMatrix, Engine::matrUmbra;
 
-
-    void Engine::processNormalKeys(const unsigned char key, [[maybe_unused]] const int x, [[maybe_unused]] const int y)
-    {
-        switch (key)
-        {
-            case 27u:
-                Quit(); //TODO
-                break;
-
-            case '-':
-                dist -= 5.0f;
-                break;
-
-            case '+':
-                dist += 5.0f;
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    void Engine::processSpecialKeys(const int key, [[maybe_unused]] const int xx, [[maybe_unused]] const int yy)
-    {
-        switch (key)
-        {
-            case GLUT_KEY_LEFT:
-                beta -= 0.01f;
-                break;
-
-            case GLUT_KEY_RIGHT:
-                beta += 0.01f;
-                break;
-
-            case GLUT_KEY_UP:
-                alpha += 0.05f;
-                break;
-
-            case GLUT_KEY_DOWN:
-                alpha -= 0.05f;
-                break;
-
-            default:
-                break;
-        }
-    }
 
     void Engine::createVbo() // sunt folosite doua buffere
     {
@@ -506,7 +469,9 @@ namespace Misty::Core {
 
         std::ostringstream FpsLabel;
         FpsLabel.precision(2u);
-        FpsLabel << std::fixed << Fps;
+        ++Ticks;
+        TotalFps += 1.0f / ClockModule::Get()->DeltaTime();
+        FpsLabel << std::fixed << AverageFps;
         glWindowPos2f(width * 0.01f, height * 0.9f);
         glutBitmapString(
                 GLUT_BITMAP_9_BY_15,

@@ -30,8 +30,8 @@ namespace Misty::Core {
         static inline const bool& IsRunning() noexcept { return bIsRunning; }
         static inline const int& GetWindow() noexcept { return WindowID; }
 
-        Engine(const Engine&) = delete;
-        Engine& operator= (const Engine&) = delete;
+        Engine(const Engine&) noexcept = delete;
+        Engine& operator= (const Engine&) noexcept = delete;
 
 
         static GLuint vaoId;
@@ -62,8 +62,6 @@ namespace Misty::Core {
         // matrice
         static glm::mat4 ViewMatrix, ProjectionMatrix, matrUmbra;
 
-        static void processNormalKeys(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y);
-        static void processSpecialKeys(int key, [[maybe_unused]] int xx, [[maybe_unused]] int yy);
         static void createVbo();
         static void associateAttributePointers();
         static void destroyVbo();

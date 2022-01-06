@@ -46,11 +46,11 @@ namespace Misty::Core {
 
     class IModule {
     protected:
-        IEventListener* Listener = nullptr;
+        IEventListener* Engine = nullptr;
 
     public:
-        virtual void SetListener(IEventListener* const NewListener) {
-            Listener = NewListener;
+        virtual void SetListener(IEventListener* const Listener) {
+            Engine = Listener;
         }
     };
 }

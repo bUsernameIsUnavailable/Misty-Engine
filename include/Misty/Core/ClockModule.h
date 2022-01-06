@@ -11,13 +11,12 @@ namespace Misty::Core {
         friend class Singleton<ClockModule>;
 
     public:
-        void Start();
         void Tick();
 
         [[nodiscard]] inline const float& DeltaTime() const noexcept { return DeltaFrame; }
 
-        ClockModule(const ClockModule&) = delete;
-        ClockModule& operator= (const ClockModule&) = delete;
+        ClockModule(const ClockModule&) noexcept = delete;
+        ClockModule& operator= (const ClockModule&) noexcept = delete;
     };
 }
 

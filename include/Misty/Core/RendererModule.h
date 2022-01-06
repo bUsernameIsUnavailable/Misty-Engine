@@ -8,8 +8,8 @@ namespace Misty::Core {
         friend class Singleton<RendererModule>;
 
     public:
-        RendererModule(const RendererModule&) = delete;
-        RendererModule& operator= (const RendererModule&) = delete;
+        RendererModule(const RendererModule&) noexcept = delete;
+        RendererModule& operator= (const RendererModule&) noexcept = delete;
     };
 }
 

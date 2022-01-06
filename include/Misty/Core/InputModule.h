@@ -4,12 +4,17 @@
 
 namespace Misty::Core {
     class InputModule final : public Singleton<InputModule>, public IModule {
+        static constexpr unsigned char EscKey = 27u;
+
         InputModule() noexcept = default;
         friend class Singleton<InputModule>;
 
     public:
-        InputModule(const InputModule&) = delete;
-        InputModule& operator= (const InputModule&) = delete;
+        void ProcessKeyboardKeys(unsigned char, [[maybe_unused]] int, [[maybe_unused]] int) noexcept;
+        void ProcessSpecialKeys(int, [[maybe_unused]] int, [[maybe_unused]] int) noexcept;
+
+        InputModule(const InputModule&) noexcept = delete;
+        InputModule& operator= (const InputModule&) noexcept = delete;
     };
 }
 
