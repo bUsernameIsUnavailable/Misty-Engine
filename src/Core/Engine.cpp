@@ -14,7 +14,9 @@ namespace Misty::Core {
         if (Value == 0)
             return;
 
-        AverageFps = TotalFps / (float) Ticks;
+        if (Ticks != 0u) {
+            AverageFps = TotalFps / (float) Ticks;
+        }
         TotalFps = 0.0f;
         Ticks = 0u;
         glutTimerFunc(100u, FpsCallback, 1);
@@ -47,17 +49,21 @@ namespace Misty::Core {
 
         CHECK(glewInit() == GLEW_OK, "GLEW failed to initialise!");
 
-        glutIdleFunc([]() noexcept {});
-        glutDisplayFunc(renderFunction); //TODO
-
         glutTimerFunc(0u, FpsCallback, 1);
         glutTimerFunc(0u, RedisplayCallback, 1);
 
-        glutKeyboardFunc([](unsigned char Key, int X, int Y) noexcept {
+        glutKeyboardFunc([](const unsigned char Key, const int X, const int Y) noexcept {
             InputModule::Get()->ProcessKeyboardKeys(Key, X, Y);
         });
         glutSpecialFunc([](const int Key, const int X, const int Y) noexcept {
             InputModule::Get()->ProcessSpecialKeys(Key, X, Y);
+        });
+
+        glutDisplayFunc(renderFunction); //TODO
+        glutReshapeFunc([](const int Width, const int Height) {
+            width = Width;
+            height = Height;
+            glViewport(0, 0, (GLsizei) width, (GLsizei) height);
         });
         glutCloseFunc(Quit);
     }
@@ -107,7 +113,7 @@ namespace Misty::Core {
     float Engine::obsx, Engine::obsy, Engine::obsz;
     float Engine::refx = 0.0f, Engine::refy = 0.0f, Engine::refz = 100.0f;
     float Engine::vx = 0.0f, Engine::vy = 0.0f, Engine::vz = 1.0f;
-    float Engine::alpha = 0.0f, Engine::beta = 0.0f, Engine::dist = 60.0f;
+    float Engine::alpha = 0.0f, Engine::beta = 1.0f, Engine::dist = 60.0f;
     float Engine::width = 1280.0f, Engine::height = 720.0f, Engine::znear = 0.1f, Engine::fov = 45.0f;
 
     // sursa de lumina
