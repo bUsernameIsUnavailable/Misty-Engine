@@ -18,8 +18,10 @@
 #include <soil/SOIL.h>
 #include <entt/entt.hpp>
 
-#include <Misty/Core/Utils.h>
 #include <Misty/Core/Components.h>
+#include <Misty/Utils/Macros.h>
+#include <Misty/Utils/Mediator.h>
+#include <Misty/Utils/Singleton.h>
 
 
 #endif //MISTY_PCH_HXX

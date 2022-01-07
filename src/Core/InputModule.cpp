@@ -9,15 +9,15 @@ namespace Misty::Core {
     ) noexcept {
         switch (Key) {
             case EscKey:
-                Engine->Listen(this, "Quit");
+                Engine->Listen(this, Utils::MistyEvent::QUIT);
                 break;
 
             case '+':
-                // dist += 5.0f;
+                CameraDepth += 5.0f;
                 break;
 
             case '-':
-                // dist -= 5.0f;
+                CameraDepth -= 5.0f;
                 break;
 
             default:
@@ -31,20 +31,20 @@ namespace Misty::Core {
             [[maybe_unused]] const int Y
     ) noexcept {
         switch (Key) {
-            case GLUT_KEY_UP:
-                // alpha += 0.05f;
-                break;
-
-            case GLUT_KEY_DOWN:
-                // alpha -= 0.05f;
-                break;
-
             case GLUT_KEY_RIGHT:
-                // beta += 0.01f;
+                Horizontal += 0.01f;
                 break;
 
             case GLUT_KEY_LEFT:
-                // beta -= 0.01f;
+                Horizontal -= 0.01f;
+                break;
+
+            case GLUT_KEY_UP:
+                Vertical += 0.05f;
+                break;
+
+            case GLUT_KEY_DOWN:
+                Vertical -= 0.05f;
                 break;
 
             default:

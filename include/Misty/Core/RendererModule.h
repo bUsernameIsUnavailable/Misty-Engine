@@ -3,7 +3,7 @@
 
 
 namespace Misty::Core {
-    class RendererModule final : public Singleton<RendererModule>, public IModule {
+    class RendererModule final : public Utils::Singleton<RendererModule>, public Utils::IModule {
         RendererModule() noexcept = default;
         friend class Singleton<RendererModule>;
 

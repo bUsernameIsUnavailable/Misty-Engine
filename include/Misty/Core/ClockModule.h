@@ -3,7 +3,7 @@
 
 
 namespace Misty::Core {
-    class ClockModule final : public Singleton<ClockModule>, public IModule {
+    class ClockModule final : public Utils::Singleton<ClockModule>, public Utils::IModule {
         float DeltaFrame = 0.0f;
         float LastFrame = 0.0f;
 

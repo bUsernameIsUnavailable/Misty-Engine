@@ -89,8 +89,16 @@ namespace Misty::Core {
         bIsRunning = false;
     }
 
-    void Engine::Listen(IModule* const Module, const std::string& Event) const noexcept {
+    void Engine::Listen(Utils::IModule* const Module, const Utils::MistyEvent& Event) const noexcept {
+        switch (Event) {
+            case Utils::MistyEvent::QUIT:
+                Quit();
+                break;
 
+            case Utils::MistyEvent::NONE:
+            default:
+                break;
+        }
     }
 
 
@@ -113,7 +121,6 @@ namespace Misty::Core {
     float Engine::obsx, Engine::obsy, Engine::obsz;
     float Engine::refx = 0.0f, Engine::refy = 0.0f, Engine::refz = 100.0f;
     float Engine::vx = 0.0f, Engine::vy = 0.0f, Engine::vz = 1.0f;
-    float Engine::alpha = 0.0f, Engine::beta = 1.0f, Engine::dist = 60.0f;
     float Engine::width = 1280.0f, Engine::height = 720.0f, Engine::znear = 0.1f, Engine::fov = 45.0f;
 
     // sursa de lumina
@@ -402,9 +409,9 @@ namespace Misty::Core {
         glWindowPos2f(0.0f, 0.0f);
 
         // reperul de vizualizare + proiectie
-        obsx = refx + dist * (10.0f + std::cos(alpha)) * std::cos(beta);
-        obsy = refy + dist * (10.0f + std::cos(alpha)) * std::sin(beta);
-        obsz = refz + dist * std::sin(alpha);
+        obsx = refx + InputModule::Get()->GetCameraDepth() * (10.0f + std::cos(InputModule::Get()->GetVertical())) * std::cos(InputModule::Get()->GetHorizontal());
+        obsy = refy + InputModule::Get()->GetCameraDepth() * (10.0f + std::cos(InputModule::Get()->GetVertical())) * std::sin(InputModule::Get()->GetHorizontal());
+        obsz = refz + InputModule::Get()->GetCameraDepth() * std::sin(InputModule::Get()->GetVertical());
 
         glm::vec3 obs = glm::vec3(obsx, obsy, obsz);
         glm::vec3 pctRef = glm::vec3(refx, refy, refz);

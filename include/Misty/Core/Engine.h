@@ -7,7 +7,7 @@
 
 
 namespace Misty::Core {
-    class Engine final : public Singleton<Engine>, public IEventListener {
+    class Engine final : public Utils::Singleton<Engine>, public Utils::IEventListener {
         ClockModule* const Clock = ClockModule::Get();
         InputModule* const Input = InputModule::Get();
         RendererModule* const Renderer = RendererModule::Get();
@@ -25,7 +25,7 @@ namespace Misty::Core {
         void Start(int*, char**);
         void Update();
 
-        void Listen(IModule*, const std::string&) const noexcept override;
+        void Listen(Utils::IModule*, const Utils::MistyEvent&) const noexcept override;
 
         static inline const bool& IsRunning() noexcept { return bIsRunning; }
         static inline const int& GetWindow() noexcept { return WindowID; }
@@ -53,7 +53,6 @@ namespace Misty::Core {
         static float obsx, obsy, obsz;
         static float refx, refy, refz;
         static float vx, vy, vz;
-        static float alpha, beta, dist;
         static float width, height, znear, fov;
 
         // sursa de lumina

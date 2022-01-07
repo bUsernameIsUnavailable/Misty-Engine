@@ -1,8 +1,7 @@
-#ifndef MISTY_UTILS_H
-#define MISTY_UTILS_H
+#ifndef MISTY_MACROS_H
+#define MISTY_MACROS_H
 
 
-// Macros
 #ifndef NDEBUG
 #include <exception>
 
@@ -22,38 +21,4 @@ do {                                                                            
 #endif
 
 
-namespace Misty::Core {
-    template <class T>
-    class Singleton {
-    public:
-        virtual ~Singleton() = 0;
-
-        static T* Get() noexcept {
-            static T Instance;
-            return &Instance;
-        }
-    };
-
-    template <class T>
-    Singleton<T>::~Singleton() = default;
-
-
-    class IEventListener {
-    public:
-        virtual void Listen(class IModule*, const std::string&) const noexcept = 0;
-    };
-
-
-    class IModule {
-    protected:
-        IEventListener* Engine = nullptr;
-
-    public:
-        virtual void SetListener(IEventListener* const Listener) {
-            Engine = Listener;
-        }
-    };
-}
-
-
-#endif //MISTY_UTILS_H
+#endif //MISTY_MACROS_H
