@@ -21,11 +21,11 @@ namespace Misty::Core {
                 Engine->Listen(this, Utils::MistyEvent::GET_HORIZONTAL));
         const float& Vertical = *static_cast<const float*>(
                 Engine->Listen(this, Utils::MistyEvent::GET_VERTICAL));
-        CameraPosition = {
-                ReferencePoint.x + CameraDepth * (10.0f + std::cos(Vertical)) * std::cos(Horizontal),
-                ReferencePoint.y + CameraDepth * (10.0f + std::cos(Vertical)) * std::sin(Horizontal),
-                ReferencePoint.z + CameraDepth * std::sin(Vertical)
-        };
+        CameraPosition = CameraDepth * glm::vec3(
+                std::cos(Horizontal) * (10.0f + std::cos(Vertical)),
+                std::sin(Horizontal) * (10.0f + std::cos(Vertical)),
+                std::sin(Vertical)
+        ) + ReferencePoint;
         ViewMatrix = glm::lookAt(CameraPosition, ReferencePoint, NormalisedUp);
         glUniformMatrix4fv((GLint) ViewMatrixId, 1u, GL_FALSE, &ViewMatrix[0u][0u]);
 
@@ -38,17 +38,17 @@ namespace Misty::Core {
         glUniformMatrix4fv((GLint) ProjectionMatrixId, 1u, GL_FALSE, &ProjectionMatrix[0u][0u]);
 
         glUniform3f((GLint) ViewPositionId, CameraPosition.x, CameraPosition.y, CameraPosition.z);
-        glUniform3f((GLint) LightPositionId, LightSource.x, LightSource.y, LightSource.z);
+        glUniform4f((GLint) LightPositionId, LightSource.x, LightSource.y, LightSource.z, LightSource.w);
         glUniform4f((GLint) LightColourId, 1.0f, 1.0f, 1.0f, 1.0f);
 
         const glm::vec4& ShadowPosition = glm::vec4(0.0f, 0.0f, 1.0f, -5.0f);
-        const glm::vec4& ShadowPlane = ShadowPosition * LightSource;
+        const glm::vec4& ShadowPlaneEquation = ShadowPosition * LightSource;
         ShadowMatrix = glm::mat4(
                 -ShadowPosition.x * LightSource,
                 -ShadowPosition.y * LightSource,
                 -ShadowPosition.z * LightSource,
                 -ShadowPosition.w * LightSource
-        ) + glm::mat4(ShadowPlane.x + ShadowPlane.y + ShadowPlane.z + ShadowPlane.w);
+        ) + glm::mat4(ShadowPlaneEquation.x + ShadowPlaneEquation.y + ShadowPlaneEquation.z + ShadowPlaneEquation.w);
         glUniformMatrix4fv((GLint) ShadowMatrixId, 1, GL_FALSE, &ShadowMatrix[0u][0u]);
 
         ColourCode = 0u;

@@ -10,7 +10,7 @@ out lowp vec4 ex_Color;
 uniform highp mat4 ProjectionMatrix;
 uniform mediump mat4 ViewMatrix;
 uniform mediump mat4 ShadowMatrix;
-uniform mediump vec3 LightPosition;
+uniform mediump vec4 LightPosition;
 uniform mediump vec3 ViewPosition;
 uniform lowp vec4 LightColour;
 uniform lowp int ColourCode;
@@ -28,7 +28,7 @@ void main() {
             gl_Position = PerspectiveMatrix * in_Position;
 
             vec3 Normal = normalize(mat3(PerspectiveMatrix) * in_Normal);
-            vec3 LightDirection = normalize(vec3(PerspectiveMatrix * vec4(LightPosition, 1.0f) - gl_Position));
+            vec3 LightDirection = normalize(vec3(PerspectiveMatrix * LightPosition - gl_Position));
 
             float AmbientValue = 0.2f;
             float DiffuseValue = pow(
