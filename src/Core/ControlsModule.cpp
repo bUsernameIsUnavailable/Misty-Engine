@@ -1,8 +1,8 @@
-#include <Misty/Core/InputModule.h>
+#include <Misty/Core/ControlsModule.h>
 
 
 namespace Misty::Core {
-    void InputModule::ProcessKeyboardKeys(
+    void ControlsModule::ProcessKeyboardKeys(
             const unsigned char Key,
             [[maybe_unused]] const int X,
             [[maybe_unused]] const int Y
@@ -25,7 +25,7 @@ namespace Misty::Core {
         }
     }
 
-    void InputModule::ProcessSpecialKeys(
+    void ControlsModule::ProcessSpecialKeys(
             const int Key,
             [[maybe_unused]] const int X,
             [[maybe_unused]] const int Y

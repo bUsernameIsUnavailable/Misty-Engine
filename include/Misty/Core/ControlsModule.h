@@ -1,15 +1,15 @@
-#ifndef MISTY_INPUTMODULE_H
-#define MISTY_INPUTMODULE_H
+#ifndef MISTY_CONTROLSMODULE_H
+#define MISTY_CONTROLSMODULE_H
 
 
 namespace Misty::Core {
-    class InputModule final : public Utils::Singleton<InputModule>, public Utils::IModule {
+    class ControlsModule final : public Utils::Singleton<ControlsModule>, public Utils::IModule {
         float Horizontal = 1.0f;
         float Vertical = 0.0f;
         float CameraDepth = 60.0f;
 
-        InputModule() noexcept = default;
-        friend class Singleton<InputModule>;
+        ControlsModule() = default;
+        friend class Singleton<ControlsModule>;
 
     public:
         void ProcessKeyboardKeys(unsigned char, [[maybe_unused]] int, [[maybe_unused]] int) noexcept;
@@ -19,12 +19,12 @@ namespace Misty::Core {
         [[nodiscard]] const float& GetVertical() const noexcept { return Vertical; }
         [[nodiscard]] const float& GetCameraDepth() const noexcept { return CameraDepth; }
 
-        InputModule(const InputModule&) noexcept = delete;
-        InputModule& operator= (const InputModule&) noexcept = delete;
+        ControlsModule(const ControlsModule&) noexcept = delete;
+        ControlsModule& operator= (const ControlsModule&) noexcept = delete;
 
         static constexpr unsigned char ESC = 27u;
     };
 }
 
 
-#endif //MISTY_INPUTMODULE_H
+#endif //MISTY_CONTROLSMODULE_H
