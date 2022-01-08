@@ -8,7 +8,7 @@ namespace Misty::Core {
             [[maybe_unused]] const int Y
     ) noexcept {
         switch (Key) {
-            case EscKey:
+            case ESC:
                 Engine->Listen(this, Utils::MistyEvent::QUIT);
                 break;
 

@@ -4,8 +4,6 @@
 
 namespace Misty::Core {
     class InputModule final : public Utils::Singleton<InputModule>, public Utils::IModule {
-        static constexpr unsigned char EscKey = 27u;
-
         float Horizontal = 1.0f;
         float Vertical = 0.0f;
         float CameraDepth = 60.0f;
@@ -23,6 +21,8 @@ namespace Misty::Core {
 
         InputModule(const InputModule&) noexcept = delete;
         InputModule& operator= (const InputModule&) noexcept = delete;
+
+        static constexpr unsigned char ESC = 27u;
     };
 }
 
