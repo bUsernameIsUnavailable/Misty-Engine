@@ -15,11 +15,11 @@ namespace Misty::Core {
         glEnable(GL_DEPTH_TEST);
         glWindowPos2f(0.0f, 0.0f);
 
-        const float CameraDepth = *static_cast<const float*>(
+        const float& CameraDepth = *static_cast<const float*>(
                 Engine->Listen(this, Utils::MistyEvent::GET_CAMERA_DEPTH));
-        const float Horizontal = *static_cast<const float*>(
+        const float& Horizontal = *static_cast<const float*>(
                 Engine->Listen(this, Utils::MistyEvent::GET_HORIZONTAL));
-        const float Vertical = *static_cast<const float*>(
+        const float& Vertical = *static_cast<const float*>(
                 Engine->Listen(this, Utils::MistyEvent::GET_VERTICAL));
         CameraPosition = {
                 ReferencePoint.x + CameraDepth * (10.0f + std::cos(Vertical)) * std::cos(Horizontal),
@@ -29,40 +29,26 @@ namespace Misty::Core {
         ViewMatrix = glm::lookAt(CameraPosition, ReferencePoint, NormalisedUp);
         glUniformMatrix4fv((GLint) ViewMatrixId, 1u, GL_FALSE, &ViewMatrix[0u][0u]);
 
-        const float WindowWidth = (float) *static_cast<const unsigned int*>(
+        const float& WindowWidth = (float) *static_cast<const unsigned int*>(
                 Engine->Listen(this, Utils::MistyEvent::GET_WINDOW_WIDTH));
-        const float WindowHeight = (float) *static_cast<const unsigned int*>(
+        const float& WindowHeight = (float) *static_cast<const unsigned int*>(
                 Engine->Listen(this, Utils::MistyEvent::GET_WINDOW_HEIGHT));
         Frustum.y = WindowWidth / WindowHeight;
         ProjectionMatrix = glm::infinitePerspective(Frustum.x, Frustum.y, Frustum.z);
         glUniformMatrix4fv((GLint) ProjectionMatrixId, 1u, GL_FALSE, &ProjectionMatrix[0u][0u]);
 
-        glUniform4f((GLint) LightColourId, 1.0f, 1.0f, 1.0f, 1.0f);
-        glUniform3f((GLint) LightPositionId, LightSource.x, LightSource.y, LightSource.z);
         glUniform3f((GLint) ViewPositionId, CameraPosition.x, CameraPosition.y, CameraPosition.z);
+        glUniform3f((GLint) LightPositionId, LightSource.x, LightSource.y, LightSource.z);
+        glUniform4f((GLint) LightColourId, 1.0f, 1.0f, 1.0f, 1.0f);
 
-        const float d = -5.0f;
-
-        ShadowMatrix[0u][0u] = LightSource.z + d;
-        ShadowMatrix[0u][1u] = 0.0f;
-        ShadowMatrix[0u][2u] = 0.0f;
-        ShadowMatrix[0u][3u] = 0.0f;
-
-        ShadowMatrix[1u][0u] = 0.0f;
-        ShadowMatrix[1u][1u] = LightSource.z + d;
-        ShadowMatrix[1u][2u] = 0.0f;
-        ShadowMatrix[1u][3u] = 0.0f;
-
-        ShadowMatrix[2u][0u] = -LightSource.x;
-        ShadowMatrix[2u][1u] = -LightSource.y;
-        ShadowMatrix[2u][2u] = d;
-        ShadowMatrix[2u][3u] = -1.0f;
-
-        ShadowMatrix[3u][0u] = -d * LightSource.x;
-        ShadowMatrix[3u][1u] = -d * LightSource.y;
-        ShadowMatrix[3u][2u] = -d * LightSource.z;
-        ShadowMatrix[3u][3u] = LightSource.z;
-
+        const glm::vec4& ShadowPosition = glm::vec4(0.0f, 0.0f, 1.0f, -5.0f);
+        const glm::vec4& ShadowPlane = ShadowPosition * LightSource;
+        ShadowMatrix = glm::mat4(
+                -ShadowPosition.x * LightSource,
+                -ShadowPosition.y * LightSource,
+                -ShadowPosition.z * LightSource,
+                -ShadowPosition.w * LightSource
+        ) + glm::mat4(ShadowPlane.x + ShadowPlane.y + ShadowPlane.z + ShadowPlane.w);
         glUniformMatrix4fv((GLint) ShadowMatrixId, 1, GL_FALSE, &ShadowMatrix[0u][0u]);
 
         ColourCode = 0u;

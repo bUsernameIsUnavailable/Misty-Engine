@@ -25,11 +25,11 @@ namespace Misty::Core {
         glm::vec3 ReferencePoint = glm::vec3(0.0f, 0.0f, 100.0f);
         glm::vec3 NormalisedUp = glm::vec3(0.0f, 0.0f, 1.0f);
         glm::vec3 Frustum = glm::vec3(45.0f, 16.0f / 9.0f, 0.1f);
-        glm::vec3 LightSource = glm::vec3(500.0f, 0.0f, 400.0f);
+        glm::vec4 LightSource = glm::vec4(500.0f, 0.0f, 400.0f, 1.0f);
 
-        glm::mat4 ViewMatrix = glm::mat4(1.0f);
-        glm::mat4 ProjectionMatrix = glm::mat4(1.0f);
-        glm::mat4 ShadowMatrix = glm::mat4(1.0f);
+        glm::mat4 ViewMatrix = glm::mat4(0.0f);
+        glm::mat4 ProjectionMatrix = glm::mat4(0.0f);
+        glm::mat4 ShadowMatrix = glm::mat4(0.0f);
 
         RenderModule() = default;
         friend class Singleton<RenderModule>;
