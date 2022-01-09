@@ -31,6 +31,8 @@ namespace Misty::Core {
         glm::mat4 ProjectionMatrix = glm::mat4(0.0f);
         glm::mat4 ShadowMatrix = glm::mat4(0.0f);
 
+        static GLuint LoadSingleShader(const char*, const bool&) noexcept;
+
         RenderModule() = default;
         friend class Singleton<RenderModule>;
 
@@ -40,12 +42,12 @@ namespace Misty::Core {
         void Start() noexcept;
         void GetUniformLocations() noexcept;
 
-        GLuint LoadShaders(const char*, const char*) noexcept;
+        static GLuint LoadShaders(const char*, const char*) noexcept;
         void CreateShaders() noexcept;
-        void DestroyShaders() noexcept;
+        void DestroyShaders() const noexcept;
 
         void CreateVbo() noexcept;
-        void AssociateAttributePointers() const noexcept;
+        static void AssociateAttributePointers() noexcept;
         void DestroyVbo() noexcept;
 
         RenderModule(const RenderModule&) noexcept = delete;

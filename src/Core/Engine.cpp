@@ -27,13 +27,13 @@ namespace Misty::Core {
         Renderer->SetListener(this);
     }
 
-    void Engine::Initialise(int* const Argcp, char** const Argv) {
+    void Engine::Initialise(int* const Argcp, char** const Argv) const {
         glutInit(Argcp, Argv);
         glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 
         glutInitWindowSize((int) WindowWidth, (int) WindowHeight);
         glutInitWindowPosition(100, 30);
-        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+        glutInitDisplayMode(GLUT_RGBA | bUseVsync * GLUT_DOUBLE | GLUT_DEPTH);
         CHECK(WindowId = glutCreateWindow("Misty Engine"), "GLUT failed to create a window!");
 
         CHECK(glewInit() == GLEW_OK, "GLEW failed to initialise!");
@@ -80,8 +80,12 @@ namespace Misty::Core {
 
     void* Engine::Listen(Utils::IModule* const Module, const Utils::MistyEvent& Event) noexcept {
         switch (Event) {
+            case Utils::MistyEvent::GET_VSYNC:
+                return (void*) &bUseVsync;
+
             case Utils::MistyEvent::GET_WINDOW_ID:
                 return (void*) &WindowId;
+
             case Utils::MistyEvent::GET_WINDOW_WIDTH:
                 return (void*) &WindowWidth;
 

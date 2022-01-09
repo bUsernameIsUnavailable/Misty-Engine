@@ -12,13 +12,15 @@ namespace Misty::Core {
         ControlsModule* const Input = ControlsModule::Get();
         RenderModule* const Renderer = RenderModule::Get();
 
+        bool bUseVsync = true;
+
         static int WindowId;
         static unsigned int WindowWidth;
         static unsigned int WindowHeight;
 
         static bool bIsRunning;
 
-        static void Initialise(int*, char**);
+        void Initialise(int*, char**) const;
 
         Engine();
         friend class Singleton<Engine>;
@@ -32,6 +34,8 @@ namespace Misty::Core {
 
         static inline const bool& IsRunning() noexcept { return bIsRunning; }
         static inline const int& GetWindowId() noexcept { return WindowId; }
+
+        void UseVsync(const bool& bVsyncOption) noexcept { bUseVsync = bVsyncOption; }
 
         Engine(const Engine&) noexcept = delete;
         Engine& operator= (const Engine&) noexcept = delete;

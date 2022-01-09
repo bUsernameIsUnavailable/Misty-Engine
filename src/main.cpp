@@ -5,6 +5,7 @@ using namespace Misty::Core;
 
 int main(int argc, char** const argv) {
     auto* const Misty = Engine::Get();
+    Misty->UseVsync(true);
     Misty->Start(&argc, argv);
 
     entt::registry Registry;

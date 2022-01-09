@@ -86,7 +86,9 @@ namespace Misty::Core {
                 )
         );
 
-        glutSwapBuffers();
+        if (*static_cast<const bool*>(Engine->Listen(this, Utils::MistyEvent::GET_VSYNC))) {
+            glutSwapBuffers();
+        }
         glFlush();
     }
 
@@ -100,58 +102,38 @@ namespace Misty::Core {
         ColourCodeId = glGetUniformLocation(ProgramId, "ColourCode");
     }
 
-    GLuint RenderModule::LoadShaders(const char* const VertexFilePath, const char* const FragmentFilePath) noexcept {
-        GLuint VertexShaderId = glCreateShader(GL_VERTEX_SHADER);
-        GLuint FragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
+    GLuint RenderModule::LoadSingleShader(const char* const ShaderFilePath, const bool& bIsVertex) noexcept {
+        const GLuint& ShaderId = glCreateShader(bIsVertex * GL_VERTEX_SHADER + !bIsVertex * GL_FRAGMENT_SHADER);
 
-        std::string VertexShaderCode;
-        std::ifstream VertexShaderStream(VertexFilePath, std::ios::in);
-        if (VertexShaderStream.is_open()) {
-            std::string Line;
-            while (getline(VertexShaderStream, Line)) {
-                VertexShaderCode += Line + "\n";
-            }
-            VertexShaderStream.close();
-        }
+        std::ifstream ShaderStream(ShaderFilePath, std::ios::in);
+        const std::string ShaderCode(
+                (std::istreambuf_iterator<char>(ShaderStream)),
+                std::istreambuf_iterator<char>()
+        );
+        ShaderStream.close();
 
-        std::string FragmentShaderCode;
-        std::ifstream FragmentShaderStream(FragmentFilePath, std::ios::in);
-        if (FragmentShaderStream.is_open()) {
-            std::string Line;
-            while (getline(FragmentShaderStream, Line)) {
-                FragmentShaderCode += Line + "\n";
-            }
-            FragmentShaderStream.close();
-        }
+        const char* const ShaderSourcePointer = ShaderCode.c_str();
+        std::fprintf(stdout, "Compiling shader: %s\n", ShaderFilePath);
+        glShaderSource(ShaderId, 1u, &ShaderSourcePointer, nullptr);
+        glCompileShader(ShaderId);
 
         GLint Result = GL_FALSE;
         int InfoLogLength;
 
-        const char* const VertexSourcePointer = VertexShaderCode.c_str();
-        std::fprintf(stdout, "Compiling shader: %s\n", VertexFilePath);
-        glShaderSource(VertexShaderId, 1u, &VertexSourcePointer, nullptr);
-        glCompileShader(VertexShaderId);
-
-        glGetShaderiv(VertexShaderId, GL_COMPILE_STATUS, &Result);
-        glGetShaderiv(VertexShaderId, GL_INFO_LOG_LENGTH, &InfoLogLength);
-        std::vector<char> VertexShaderErrorMessage(InfoLogLength);
+        glGetShaderiv(ShaderId, GL_COMPILE_STATUS, &Result);
+        glGetShaderiv(ShaderId, GL_INFO_LOG_LENGTH, &InfoLogLength);
+        std::vector<char> ShaderErrorMessage(InfoLogLength);
         if (!Result) {
-            glGetShaderInfoLog(VertexShaderId, InfoLogLength, nullptr, &VertexShaderErrorMessage[0u]);
-            std::fprintf(stdout, "%s\n", &VertexShaderErrorMessage[0u]);
+            glGetShaderInfoLog(ShaderId, InfoLogLength, nullptr, &ShaderErrorMessage[0u]);
+            std::fprintf(stderr, "%s\n", &ShaderErrorMessage[0u]);
         }
 
-        const char* const FragmentSourcePointer = FragmentShaderCode.c_str();
-        std::fprintf(stdout, "Compiling shader: %s\n", FragmentFilePath);
-        glShaderSource(FragmentShaderId, 1u, &FragmentSourcePointer, nullptr);
-        glCompileShader(FragmentShaderId);
+        return ShaderId;
+    }
 
-        glGetShaderiv(FragmentShaderId, GL_COMPILE_STATUS, &Result);
-        glGetShaderiv(FragmentShaderId, GL_INFO_LOG_LENGTH, &InfoLogLength);
-        std::vector<char> FragmentShaderErrorMessage(InfoLogLength);
-        if(!Result) {
-            glGetShaderInfoLog(FragmentShaderId, InfoLogLength, nullptr, &FragmentShaderErrorMessage[0u]);
-            std::fprintf(stdout, "%s\n", &FragmentShaderErrorMessage[0u]);
-        }
+    GLuint RenderModule::LoadShaders(const char* const VertexFilePath, const char* const FragmentFilePath) noexcept {
+        GLuint VertexShaderId = LoadSingleShader(VertexFilePath, true);
+        GLuint FragmentShaderId = LoadSingleShader(FragmentFilePath, false);
 
         GLuint Program = glCreateProgram();
         std::fprintf(stdout, "Binding program: %u\n", Program);
@@ -159,12 +141,15 @@ namespace Misty::Core {
         glAttachShader(Program, FragmentShaderId);
         glLinkProgram(Program);
 
+        GLint Result = GL_FALSE;
+        int InfoLogLength;
+
         glGetProgramiv(Program, GL_LINK_STATUS, &Result);
         glGetProgramiv(Program, GL_INFO_LOG_LENGTH, &InfoLogLength);
         std::vector<char> ProgramErrorMessage(std::max(InfoLogLength, 1));
         if(!Result) {
             glGetProgramInfoLog(Program, InfoLogLength, nullptr, &ProgramErrorMessage[0u]);
-            std::fprintf(stdout, "%s\n", &ProgramErrorMessage[0u]);
+            std::fprintf(stderr, "%s\n", &ProgramErrorMessage[0u]);
         }
 
         glDeleteShader(FragmentShaderId);
@@ -181,7 +166,7 @@ namespace Misty::Core {
         glUseProgram(ProgramId);
     }
 
-    void RenderModule::DestroyShaders() noexcept {
+    void RenderModule::DestroyShaders() const noexcept {
         glDeleteProgram(ProgramId);
     }
 
@@ -307,7 +292,7 @@ namespace Misty::Core {
         glEnableVertexAttribArray(2u);
     }
 
-    void RenderModule::AssociateAttributePointers() const noexcept {
+    void RenderModule::AssociateAttributePointers() noexcept {
         glVertexAttribPointer(0u, 4u, GL_FLOAT, GL_FALSE, 11u * sizeof(GLfloat), nullptr);
         glVertexAttribPointer(1u, 4u, GL_FLOAT, GL_FALSE, 11u * sizeof(GLfloat), (GLvoid*) (4u * sizeof(GLfloat)));
         glVertexAttribPointer(2u, 3u, GL_FLOAT, GL_FALSE, 11u * sizeof(GLfloat), (GLvoid*) (8u * sizeof(GLfloat)));

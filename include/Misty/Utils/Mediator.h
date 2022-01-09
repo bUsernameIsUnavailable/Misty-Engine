@@ -5,6 +5,7 @@
 namespace Misty::Utils {
     enum class MistyEvent : unsigned char {
         NONE,
+        GET_VSYNC,
         GET_WINDOW_ID,
         GET_WINDOW_WIDTH,
         GET_WINDOW_HEIGHT,
