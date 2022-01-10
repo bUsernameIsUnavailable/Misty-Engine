@@ -2,10 +2,6 @@
 
 
 namespace Misty::Core {
-    int Engine::WindowId = -1;
-    unsigned int Engine::WindowWidth = 1280u;
-    unsigned int Engine::WindowHeight = 720u;
-
     bool Engine::bIsRunning = false;
 
 
@@ -13,7 +9,7 @@ namespace Misty::Core {
         if (Value == 0)
             return;
 
-        if (Engine::GetWindowId() != -1) {
+        if (Engine::Get()->GetWindowId() != -1) {
             glutPostRedisplay();
         }
 
@@ -27,15 +23,15 @@ namespace Misty::Core {
         Renderer->SetListener(this);
     }
 
-    void Engine::Initialise(int* const Argcp, char** const Argv) const {
+    void Engine::Initialise(int* const Argcp, char** const Argv) {
         glutInit(Argcp, Argv);
-        glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 
+        glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
         glutInitWindowSize((int) WindowWidth, (int) WindowHeight);
         glutInitWindowPosition(100, 30);
-        glutInitDisplayMode(GLUT_RGBA | bUseVsync * GLUT_DOUBLE | GLUT_DEPTH);
-        CHECK(WindowId = glutCreateWindow("Misty Engine"), "GLUT failed to create a window!");
+        glutInitDisplayMode(GLUT_RGBA | bDoubleBuffer * GLUT_DOUBLE | GLUT_DEPTH);
 
+        CHECK(WindowId = glutCreateWindow("Misty Engine"), "GLUT failed to create a window!");
         CHECK(glewInit() == GLEW_OK, "GLEW failed to initialise!");
 
         glutTimerFunc(0u, RedrawCallback, 1);
@@ -50,9 +46,9 @@ namespace Misty::Core {
 
         glutDisplayFunc([]() { RenderModule::Get()->Draw(); });
         glutReshapeFunc([](const int Width, const int Height) {
-            WindowWidth = Width;
-            WindowHeight = Height;
-            glViewport(0, 0, (GLsizei) WindowWidth, (GLsizei) WindowHeight);
+            Engine::Get()->SetWindowWidth(Width);
+            Engine::Get()->SetWindowHeight(Height);
+            glViewport(0, 0, (GLsizei) Engine::Get()->GetWindowWidth(), (GLsizei) Engine::Get()->GetWindowHeight());
         });
         glutCloseFunc([]() { Engine::Get()->Quit(); });
     }
@@ -61,7 +57,11 @@ namespace Misty::Core {
         CHECK(!bIsRunning, "Engine has already started!");
         Initialise(Argcp, Argv);
 
+        Clock->Start();
+        Input->Start();
         Renderer->Start();
+
+        glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
         bIsRunning = true;
     }
 
@@ -79,19 +79,9 @@ namespace Misty::Core {
     }
 
     void* Engine::Listen(Utils::IModule* const Module, const Utils::MistyEvent& Event) noexcept {
+        std::fprintf(stdout, "Event: %s ---> %s\n", typeid(*Module).name(), MistyEventNames.at(Event).c_str());
+
         switch (Event) {
-            case Utils::MistyEvent::GET_VSYNC:
-                return (void*) &bUseVsync;
-
-            case Utils::MistyEvent::GET_WINDOW_ID:
-                return (void*) &WindowId;
-
-            case Utils::MistyEvent::GET_WINDOW_WIDTH:
-                return (void*) &WindowWidth;
-
-            case Utils::MistyEvent::GET_WINDOW_HEIGHT:
-                return (void*) &WindowHeight;
-
             case Utils::MistyEvent::GET_CAMERA_DEPTH:
                 return (void*) &Input->GetCameraDepth();
 

@@ -4,6 +4,8 @@
 
 namespace Misty::Core {
     class RenderModule final : public Utils::Singleton<RenderModule>, public Utils::IModule {
+        static class Engine* Engine;
+
         GLuint VaoId = 0u;
         GLuint VboId1 = 0u;
         GLuint EboId1 = 0u;
@@ -37,9 +39,9 @@ namespace Misty::Core {
         friend class Singleton<RenderModule>;
 
     public:
-        void Draw() noexcept;
+        void Start() noexcept override;
 
-        void Start() noexcept;
+        void Draw() noexcept;
         void GetUniformLocations() noexcept;
 
         static GLuint LoadShaders(const char*, const char*) noexcept;

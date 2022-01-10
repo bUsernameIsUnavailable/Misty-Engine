@@ -1,9 +1,15 @@
 #include <Misty/Core/RenderModule.h>
 
+#include <Misty/Core/Engine.h>
+
 
 namespace Misty::Core {
+    Engine* RenderModule::Engine = nullptr;
+
+
     void RenderModule::Start() noexcept {
-        glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+        Engine = GetListener<class Engine>();
+        CHECK(Engine, "Engine is not an event listener!");
 
         CreateShaders();
         CreateVbo();
@@ -29,10 +35,8 @@ namespace Misty::Core {
         ViewMatrix = glm::lookAt(CameraPosition, ReferencePoint, NormalisedUp);
         glUniformMatrix4fv((GLint) ViewMatrixId, 1u, GL_FALSE, &ViewMatrix[0u][0u]);
 
-        const float& WindowWidth = (float) *static_cast<const unsigned int*>(
-                Engine->Listen(this, Utils::MistyEvent::GET_WINDOW_WIDTH));
-        const float& WindowHeight = (float) *static_cast<const unsigned int*>(
-                Engine->Listen(this, Utils::MistyEvent::GET_WINDOW_HEIGHT));
+        const float& WindowWidth = (float) Engine->GetWindowWidth();
+        const float& WindowHeight = (float) Engine->GetWindowHeight();
         Frustum.y = WindowWidth / WindowHeight;
         ProjectionMatrix = glm::infinitePerspective(Frustum.x, Frustum.y, Frustum.z);
         glUniformMatrix4fv((GLint) ProjectionMatrixId, 1u, GL_FALSE, &ProjectionMatrix[0u][0u]);
@@ -81,12 +85,13 @@ namespace Misty::Core {
         glWindowPos2f((float) WindowWidth * 0.01f, (float) WindowHeight * 0.9f);
         glutBitmapString(
                 GLUT_BITMAP_9_BY_15,
-                reinterpret_cast<const unsigned char* const>(
+                reinterpret_cast<const unsigned char*>(
                         ("FPS: " + FpsLabel.str()).c_str()
                 )
         );
 
-        if (*static_cast<const bool*>(Engine->Listen(this, Utils::MistyEvent::GET_VSYNC))) {
+
+        if (Engine->HasDoubleBuffer()) {
             glutSwapBuffers();
         }
         glFlush();

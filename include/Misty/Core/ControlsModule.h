@@ -4,6 +4,8 @@
 
 namespace Misty::Core {
     class ControlsModule final : public Utils::Singleton<ControlsModule>, public Utils::IModule {
+        static class Engine* Engine;
+
         float Horizontal = 1.0f;
         float Vertical = 0.0f;
         float CameraDepth = 60.0f;
@@ -12,6 +14,8 @@ namespace Misty::Core {
         friend class Singleton<ControlsModule>;
 
     public:
+        void Start() noexcept override;
+
         void ProcessKeyboardKeys(unsigned char, [[maybe_unused]] int, [[maybe_unused]] int) noexcept;
         void ProcessSpecialKeys(int, [[maybe_unused]] int, [[maybe_unused]] int) noexcept;
 

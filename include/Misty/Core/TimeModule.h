@@ -4,6 +4,8 @@
 
 namespace Misty::Core {
     class TimeModule final : public Utils::Singleton<TimeModule>, public Utils::IModule {
+        static class Engine* Engine;
+
         static unsigned int TicksPerSecond;
         static float TotalFpsSumPerSecond;
         static float AverageFps;
@@ -15,10 +17,12 @@ namespace Misty::Core {
         friend class Singleton<TimeModule>;
 
     public:
+        void Start() noexcept override;
+
         void Tick();
         static void CalculateFpsCallback(int) noexcept;
 
-        inline static const float& GetAverageFps() noexcept { return AverageFps; }
+        static inline const float& GetAverageFps() noexcept { return AverageFps; }
         [[nodiscard]] inline const float& DeltaTime() const noexcept { return DeltaFrame; }
 
         TimeModule(const TimeModule&) noexcept = delete;

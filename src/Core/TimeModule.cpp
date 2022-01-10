@@ -1,11 +1,20 @@
 #include <Misty/Core/TimeModule.h>
 
+#include <Misty/Core/Engine.h>
+
 
 namespace Misty::Core {
+    Engine* TimeModule::Engine = nullptr;
+
     unsigned int TimeModule::TicksPerSecond = 0u;
     float TimeModule::TotalFpsSumPerSecond = 0.0f;
     float TimeModule::AverageFps = 0.0f;
 
+
+    void TimeModule::Start() noexcept {
+        Engine = GetListener<class Engine>();
+        CHECK(Engine, "Engine is not an event listener!");
+    }
 
     void TimeModule::Tick() {
         ++TicksPerSecond;

@@ -1,7 +1,17 @@
 #include <Misty/Core/ControlsModule.h>
 
+#include <Misty/Core/Engine.h>
+
 
 namespace Misty::Core {
+    Engine* ControlsModule::Engine = nullptr;
+
+
+    void ControlsModule::Start() noexcept {
+        Engine = GetListener<class Engine>();
+        CHECK(Engine, "Engine is not an event listener!");
+    }
+
     void ControlsModule::ProcessKeyboardKeys(
             const unsigned char Key,
             [[maybe_unused]] const int X,
