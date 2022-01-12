@@ -27,6 +27,8 @@ namespace Misty::Core {
         glm::mat4 ProjectionMatrix = glm::mat4(0.0f);
         glm::mat4 ShadowMatrix = glm::mat4(0.0f);
 
+        std::string GetFpsLabel() noexcept;
+
         static GLuint LoadSingleShader(const char*, const bool&) noexcept;
 
         RenderModule() = default;

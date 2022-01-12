@@ -14,6 +14,10 @@ void main() {
             out_Color = vec4(0.0f, 0.0f, 0.0f, 0.0f);
             break;
 
+        case 2:
+            out_Color = vec4(0.0f, 1.0f, 0.0f, 1.0f);
+            break;
+
         default:
             out_Color = ex_Color;
     }

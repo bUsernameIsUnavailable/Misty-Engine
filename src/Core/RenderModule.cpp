@@ -11,6 +11,10 @@ namespace Misty::Core {
         Engine = GetListener<class Engine>();
         CHECK(Engine, "Engine is not an event listener!");
 
+        glBlendFunci(0u, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_DEPTH_TEST);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
         CreateShaders();
         CreateVbo();
         GetUniformLocations();
@@ -18,8 +22,6 @@ namespace Misty::Core {
 
     void RenderModule::Draw() noexcept {
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-        glWindowPos2f(0.0f, 0.0f);
 
         const float& CameraDepth = *static_cast<const float*>(
                 Engine->Listen(this, Utils::MistyEvent::GET_CAMERA_DEPTH));
@@ -59,7 +61,6 @@ namespace Misty::Core {
             if (Mesh.bTransparent) {
                 glEnable(GL_BLEND);
                 glDepthMask(GL_FALSE);
-                glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
             }
 
             glBindBuffer(GL_ARRAY_BUFFER, Mesh.VboId);
@@ -75,16 +76,23 @@ namespace Misty::Core {
             }
         }
 
-        std::ostringstream FpsLabel;
-        FpsLabel.precision(2u);
-        FpsLabel << std::fixed << *static_cast<const float*>(Engine->Listen(this, Utils::MistyEvent::GET_AVERAGE_FPS));
+        glUniform1i((GLint) ColourCodeId, 2);
         glWindowPos2f((float) WindowWidth * 0.01f, (float) WindowHeight * 0.9f);
         glutBitmapString(
                 GLUT_BITMAP_9_BY_15,
                 reinterpret_cast<const unsigned char*>(
-                        ("FPS: " + FpsLabel.str()).c_str()
+                        ("FPS: [ " + GetFpsLabel() + " ]").c_str()
                 )
         );
+
+        glWindowPos2f((float) WindowWidth * 0.01f, (float) WindowHeight * 0.85f);
+        glutBitmapString(
+                GLUT_BITMAP_9_BY_15,
+                reinterpret_cast<const unsigned char*>(
+                        (std::string("Double buffer: [ ") + (Engine->HasDoubleBuffer() ? "ON" : "OFF") + " ]").c_str()
+                )
+        );
+        glWindowPos2f(0.0f, 0.0f);
 
         if (Engine->HasDoubleBuffer()) {
             glutSwapBuffers();
@@ -100,6 +108,14 @@ namespace Misty::Core {
         LightPositionId = glGetUniformLocation(ProgramId, "LightPosition");
         ViewPositionId = glGetUniformLocation(ProgramId, "ViewPosition");
         ColourCodeId = glGetUniformLocation(ProgramId, "ColourCode");
+    }
+
+    std::string RenderModule::GetFpsLabel() noexcept {
+        std::ostringstream FpsLabel;
+        FpsLabel.precision(2u);
+
+        FpsLabel << std::fixed << *static_cast<const float*>(Engine->Listen(this, Utils::MistyEvent::GET_AVERAGE_FPS));
+        return FpsLabel.str();
     }
 
     GLuint RenderModule::LoadSingleShader(const char* const ShaderFilePath, const bool& bIsVertex) noexcept {
