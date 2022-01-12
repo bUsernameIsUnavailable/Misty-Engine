@@ -8,6 +8,8 @@
 
 namespace Misty::Core {
     class Engine final : public Utils::Singleton<Engine>, public Utils::IEventListener {
+        entt::registry Registry;
+
         TimeModule* const Clock = TimeModule::Get();
         ControlsModule* const Input = ControlsModule::Get();
         RenderModule* const Renderer = RenderModule::Get();
@@ -28,6 +30,8 @@ namespace Misty::Core {
         void Start(int*, char**);
         void Update() noexcept;
         void Quit() noexcept;
+
+        entt::registry& GetRegistry() noexcept { return Registry; }
 
         void* Listen(Utils::IModule*, const Utils::MistyEvent&) noexcept override;
 

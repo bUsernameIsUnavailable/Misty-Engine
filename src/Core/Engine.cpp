@@ -76,6 +76,7 @@ namespace Misty::Core {
 
         WindowId = -1;
         bIsRunning = false;
+        Registry.clear();
     }
 
     void* Engine::Listen(Utils::IModule* const Module, const Utils::MistyEvent& Event) noexcept {

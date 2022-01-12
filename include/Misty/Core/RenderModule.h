@@ -7,10 +7,6 @@ namespace Misty::Core {
         static class Engine* Engine;
 
         GLuint VaoId = 0u;
-        GLuint VboId1 = 0u;
-        GLuint EboId1 = 0u;
-        GLuint VboId2 = 0u;
-        GLuint EboId2 = 0u;
         GLuint ProgramId = 0u;
 
         GLuint ViewMatrixId = 0u;
@@ -20,8 +16,6 @@ namespace Misty::Core {
         GLuint LightPositionId = 0u;
         GLuint ViewPositionId = 0u;
         GLuint ColourCodeId = 0u;
-
-        GLuint ColourCode = 0u;
 
         glm::vec3 CameraPosition = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 ReferencePoint = glm::vec3(0.0f, 0.0f, 100.0f);

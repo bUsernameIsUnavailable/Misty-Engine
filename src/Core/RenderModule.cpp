@@ -55,29 +55,25 @@ namespace Misty::Core {
         ) + glm::mat4(ShadowPlaneEquation.x + ShadowPlaneEquation.y + ShadowPlaneEquation.z + ShadowPlaneEquation.w);
         glUniformMatrix4fv((GLint) ShadowMatrixId, 1, GL_FALSE, &ShadowMatrix[0u][0u]);
 
-        ColourCode = 0u;
-        glUniform1i((GLint) ColourCodeId, (GLint) ColourCode);
-        glBindBuffer(GL_ARRAY_BUFFER, VboId2);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EboId2);
-        AssociateAttributePointers();
-        glDrawElements(GL_TRIANGLES, 18u, GL_UNSIGNED_BYTE, nullptr);
+        for (auto&& [Entity, Mesh] : Engine->GetRegistry().view<const Mesh>().each()) {
+            if (Mesh.bTransparent) {
+                glEnable(GL_BLEND);
+                glDepthMask(GL_FALSE);
+                glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
+            }
 
-        glBindBuffer(GL_ARRAY_BUFFER, VboId1);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EboId1);
-        AssociateAttributePointers();
-        glDrawElements(GL_TRIANGLES, 6u, GL_UNSIGNED_BYTE, (void*) (36u));
-        ColourCode = 1u;
-        glUniform1i((GLint) ColourCodeId, (GLint) ColourCode);
-        glDrawElements(GL_TRIANGLES, 36u, GL_UNSIGNED_BYTE, nullptr);
+            glBindBuffer(GL_ARRAY_BUFFER, Mesh.VboId);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Mesh.EboId);
+            AssociateAttributePointers();
 
-        glEnable(GL_BLEND);
-        glDepthMask(GL_FALSE);
-        glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
-        ColourCode = 0u;
-        glUniform1i((GLint) ColourCodeId, (GLint) ColourCode);
-        glDrawElements(GL_TRIANGLES, 36u, GL_UNSIGNED_BYTE, nullptr);
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
+            glUniform1i((GLint) ColourCodeId, (GLint) Mesh.ColourCode);
+            glDrawElements(GL_TRIANGLES, (GLsizei) Mesh.Indices.size(), GL_UNSIGNED_BYTE, nullptr);
+
+            if (Mesh.bTransparent) {
+                glDepthMask(GL_TRUE);
+                glDisable(GL_BLEND);
+            }
+        }
 
         std::ostringstream FpsLabel;
         FpsLabel.precision(2u);
@@ -89,7 +85,6 @@ namespace Misty::Core {
                         ("FPS: " + FpsLabel.str()).c_str()
                 )
         );
-
 
         if (Engine->HasDoubleBuffer()) {
             glutSwapBuffers();
@@ -179,118 +174,15 @@ namespace Misty::Core {
         glGenVertexArrays(1u, &VaoId);
         glBindVertexArray(VaoId);
 
-        GLfloat Vertices1[] = {
-                -50.0f, -50.0f, 50.0f, 1.0f,
-                0.0f, 0.5f, 0.9f, 0.5f,
-                -1.0f, -1.0f, -1.0f,
+        for (auto&& [Entity, Mesh] : Engine->GetRegistry().view<Mesh>().each()) {
+            glGenBuffers(1u, &Mesh.VboId);
+            glBindBuffer(GL_ARRAY_BUFFER, Mesh.VboId);
+            glBufferData(GL_ARRAY_BUFFER, Mesh.GetVertexSize(), Mesh.Vertices.data(), GL_STATIC_DRAW);
 
-                50.0f, -50.0f, 50.0f, 1.0f,
-                0.0f, 0.5f, 0.9f, 0.5f,
-                1.0f, -1.0f, -1.0f,
-
-                50.0f, 50.0f, 50.0f, 1.0f,
-                0.0f, 0.5f, 0.9f, 0.5f,
-                1.0f, 1.0f, -1.0f,
-
-                -50.0f, 50.0f, 50.0f, 1.0f,
-                0.0f, 0.5f, 0.9f, 0.5f,
-                -1.0f, 1.0f, -1.0f,
-
-                -50.0f, -50.0f, 150.0f, 1.0f,
-                0.0f, 0.5f, 0.9f, 0.5f,
-                -1.0f, -1.0f, 1.0f,
-
-                50.0f, -50.0f, 150.0f, 1.0f,
-                0.0f, 0.5f, 0.9f, 0.5f,
-                1.0f, -1.0f, 1.0f,
-
-                50.0f, 50.0f, 150.0f, 1.0f,
-                0.0f, 0.5f, 0.9f, 0.5f,
-                1.0f, 1.0f, 1.0f,
-
-                -50.0f, 50.0f, 150.0f, 1.0f,
-                0.0f, 0.5f, 0.9f, 0.5f,
-                -1.0f, 1.0f, 1.0f,
-
-                -1000.0f, -1000.0f, 0.0f, 1.0f,
-                1.0f, 1.0f, 0.5f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-
-                1000.0f, -1000.0f, 0.0f, 1.0f,
-                1.0f, 1.0f, 0.5f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-
-                1000.0f, 1000.0f, 0.0f, 1.0f,
-                1.0f, 1.0f, 0.5f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-
-                -1000.0f, 1000.0f, 0.0f, 1.0f,
-                1.0f, 1.0f, 0.5f, 1.0f,
-                0.0f, 0.0f, 1.0f
-        };
-
-        GLubyte Indices1[] = {
-                1u, 2u, 0u, 2u, 0u, 3u,
-                2u, 3u, 6u, 6u, 3u, 7u,
-                7u, 3u, 4u, 4u, 3u, 0u,
-                4u, 0u, 5u, 5u, 0u, 1u,
-                1u, 2u, 5u, 5u, 2u, 6u,
-                5u, 6u, 4u, 4u, 6u, 7u,
-                9u, 10u, 8u, 10u, 8u, 11u
-        };
-
-        glGenBuffers(1u, &VboId1);
-        glGenBuffers(1u, &EboId1);
-        glBindBuffer(GL_ARRAY_BUFFER, VboId1);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices1), Vertices1, GL_STATIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EboId1);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices1), Indices1, GL_STATIC_DRAW);
-
-        GLfloat Vertices2[] = {
-                -40.0f, -69.28f, 70.0f, 1.0f,
-                0.1f, 1.0f, 0.2f, 1.0f,
-                -40.0f, -69.28f, 80.0f,
-
-                40.0f, -69.28f, 70.0f, 1.0f,
-                0.1f, 1.0f, 0.2f, 1.0f,
-                40.0f, -69.28f, 80.0f,
-
-                80.0f, 0.0f, 70.0f, 1.0f,
-                0.1f, 1.0f, 0.2f, 1.0f,
-                80.0f, 0.0f, 80.0f,
-
-                40.0f, 69.28f, 70.0f, 1.0f,
-                0.1f, 1.0f, 0.2f, 1.0f,
-                40.0f, 69.28f, 80.0f,
-
-                -40.0f, 69.28f, 70.0f, 1.0f,
-                0.1f, 1.0f, 0.2f, 1.0f,
-                -40.0f, 69.28f, 80.0f,
-
-                -80.0f, 0.0f, 70.0f, 1.0f,
-                0.1f, 1.0f, 0.2f, 1.0f,
-                -80.0f, 0.0f, 80.0f,
-
-                0.0f, 0.0f, 170.0f, 1.0f,
-                0.3f, 1.0f, 0.2f, 1.0f,
-                0.0f, 0.0f, 1.0f
-        };
-
-        GLubyte Indices2[] = {
-                0u, 1u, 6u,
-                1u, 2u, 6u,
-                2u, 3u, 6u,
-                3u, 4u, 6u,
-                4u, 5u, 6u,
-                5u, 0u, 6u
-        };
-
-        glGenBuffers(1u, &VboId2);
-        glGenBuffers(1u, &EboId2);
-        glBindBuffer(GL_ARRAY_BUFFER, VboId2);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices2), Vertices2, GL_STATIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EboId2);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices2), Indices2, GL_STATIC_DRAW);
+            glGenBuffers(1u, &Mesh.EboId);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Mesh.EboId);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, Mesh.GetIndexSize(), Mesh.Indices.data(), GL_STATIC_DRAW);
+        }
 
         glEnableVertexAttribArray(0u);
         glEnableVertexAttribArray(1u);
@@ -309,10 +201,14 @@ namespace Misty::Core {
         glDisableVertexAttribArray(0u);
         glBindBuffer(GL_ARRAY_BUFFER, 0u);
 
-        glDeleteBuffers(1u, &VboId1);
-        glDeleteBuffers(1u, &EboId1);
-        glDeleteBuffers(1u, &VboId2);
-        glDeleteBuffers(1u, &EboId2);
+        std::vector<GLuint> VboIds;
+        std::vector<GLuint> EboIds;
+        for (auto&& [Entity, Mesh] : Engine->GetRegistry().view<const Mesh>().each()) {
+            VboIds.push_back(Mesh.VboId);
+            EboIds.push_back(Mesh.EboId);
+        }
+        glDeleteBuffers((GLsizei) VboIds.size(), VboIds.data());
+        glDeleteBuffers((GLsizei) EboIds.size(), EboIds.data());
 
         glBindVertexArray(0u);
         glDeleteVertexArrays(1u, &VaoId);
