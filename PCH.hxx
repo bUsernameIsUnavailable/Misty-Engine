@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cstring>
 #include <vector>
 
 #include <GL/glew.h>
@@ -18,7 +19,6 @@
 #include <soil/SOIL.h>
 #include <entt/entt.hpp>
 
-#include <Misty/Core/Components.h>
 #include <Misty/Utils/Macros.h>
 #include <Misty/Utils/Mediator.h>
 #include <Misty/Utils/Singleton.h>

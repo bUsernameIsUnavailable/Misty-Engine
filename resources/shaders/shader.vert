@@ -10,7 +10,7 @@ out lowp vec4 ex_Color;
 
 uniform highp mat4 ProjectionMatrix;
 uniform mediump mat4 ViewMatrix;
-uniform mediump mat4 ShadowMatrix;
+uniform mediump vec4 ShadowPosition;
 uniform mediump vec4 LightPosition;
 uniform mediump vec3 ViewPosition;
 uniform lowp vec4 LightColour;
@@ -19,14 +19,22 @@ uniform lowp int ColourCode;
 
 void main() {
     mat4 PerspectiveMatrix = ProjectionMatrix * ViewMatrix;
+    vec4 ModelTransform = in_Model * in_Position;
 
     switch (ColourCode) {
         case 1:
-            gl_Position = PerspectiveMatrix * ShadowMatrix * in_Position;
+            mat4 ShadowMatrix = mat4(
+                -ShadowPosition.x * LightPosition,
+                -ShadowPosition.y * LightPosition,
+                -ShadowPosition.z * LightPosition,
+                -ShadowPosition.w * LightPosition
+            ) + mat4(dot(ShadowPosition * LightPosition, vec4(1.0f)));
+
+            gl_Position = PerspectiveMatrix * ShadowMatrix * ModelTransform;
             break;
 
         default:
-            gl_Position = PerspectiveMatrix * in_Model * in_Position;
+            gl_Position = PerspectiveMatrix * ModelTransform;
 
             vec3 Normal = normalize(mat3(PerspectiveMatrix) * in_Normal);
             vec3 LightDirection = normalize(vec3(PerspectiveMatrix * LightPosition - gl_Position));

@@ -6,7 +6,7 @@ namespace Misty::Core {
     class ControlsModule final : public Utils::Singleton<ControlsModule>, public Utils::IModule {
         static class Engine* Engine;
 
-        float Horizontal = 1.0f;
+        float Horizontal = 0.0f;
         float Vertical = 0.0f;
         float CameraDepth = 60.0f;
 

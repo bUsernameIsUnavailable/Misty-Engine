@@ -14,22 +14,24 @@ namespace Misty::Core {
         std::vector<GLfloat> Normals = std::vector<GLfloat>();
 
         GLuint ColourId = 0u;
-        std::vector<glm::vec4> Colours = std::vector<glm::vec4> { glm::vec4(1.0f) };
+        std::vector<glm::vec4> Colours = std::vector<glm::vec4>();
 
         GLuint ModelId = 0u;
-        std::vector<glm::mat4> Models = std::vector<glm::mat4> { glm::mat4(1.0f) };
+        std::vector<glm::mat4> Models = std::vector<glm::mat4>();
 
         GLuint EboId = 0u;
         std::vector<GLuint> Indices = std::vector<GLuint>();
 
-        bool bTransparent = false;
-        GLuint ColourCode = 0u;
-        GLsizei InstanceCount = 1u;
+        bool bBlend = false;
+        GLsizei InstanceCount = 0u;
 
         Mesh() = default;
         Mesh(std::vector<GLfloat> NewVertices, std::vector<GLfloat> NewNormals, std::vector<GLuint> NewIndices)
             : Vertices(std::move(NewVertices)), Normals(std::move(NewNormals)), Indices(std::move(NewIndices)) {}
     };
+
+    struct Shadow final : IComponent { Shadow() = default; };
+    struct Moving final : IComponent { Moving() = default; };
 }
 
 

@@ -44,63 +44,28 @@ namespace Misty::Core {
         ProjectionMatrix = glm::infinitePerspective(Frustum.x, Frustum.y, Frustum.z);
         glUniformMatrix4fv((GLint) ProjectionMatrixId, 1u, GL_FALSE, &ProjectionMatrix[0u][0u]);
 
+        glUniform4f((GLint) ShadowPositionId, ShadowPosition.x, ShadowPosition.y, ShadowPosition.z, ShadowPosition.w);
+        glUniform4f((GLint) LightPositionId, LightPosition.x, LightPosition.y, LightPosition.z, LightPosition.w);
         glUniform3f((GLint) ViewPositionId, CameraPosition.x, CameraPosition.y, CameraPosition.z);
-        glUniform4f((GLint) LightPositionId, LightSource.x, LightSource.y, LightSource.z, LightSource.w);
         glUniform4f((GLint) LightColourId, 1.0f, 1.0f, 1.0f, 1.0f);
 
-        const glm::vec4& ShadowPosition = glm::vec4(0.0f, 0.0f, 1.0f, -5.0f);
-        const glm::vec4& ShadowPlaneEquation = ShadowPosition * LightSource;
-        ShadowMatrix = glm::mat4(
-                -ShadowPosition.x * LightSource,
-                -ShadowPosition.y * LightSource,
-                -ShadowPosition.z * LightSource,
-                -ShadowPosition.w * LightSource
-        ) + glm::mat4(ShadowPlaneEquation.x + ShadowPlaneEquation.y + ShadowPlaneEquation.z + ShadowPlaneEquation.w);
-        glUniformMatrix4fv((GLint) ShadowMatrixId, 1, GL_FALSE, &ShadowMatrix[0u][0u]);
-
-        Engine->GetRegistry().sort<Misty::Core::Mesh>([](const Mesh& Mesh1, const Mesh& Mesh2) {
-            return Mesh1.bTransparent < Mesh2.bTransparent;
-        });
-        for (auto&& [Entity, Mesh] : Engine->GetRegistry().view<const Mesh>().each()) {
-            if (Mesh.bTransparent) {
+        for (const auto&& [Entity, Mesh] : Engine->GetRegistry().view<const Mesh>().each()) {
+            if (Mesh.bBlend) {
                 glEnable(GL_BLEND);
                 glDepthMask(GL_FALSE);
             }
 
-            glBindVertexArray(VaoId);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Mesh.EboId);
+            RebindAttributes(Mesh);
+            AssociateAttributes(Mesh);
 
-            glBindBuffer(GL_ARRAY_BUFFER, Mesh.VboId);
-            glVertexAttribPointer(0u, 4u, GL_FLOAT, GL_FALSE, 0u, nullptr);
-            glVertexAttribPointer(
-                    1u, 3u, GL_FLOAT, GL_FALSE, 3u * sizeof(GLfloat),
-                    (GLvoid*) (Mesh.Vertices.size() * sizeof(GLfloat))
-            );
-
-            glBindBuffer(GL_ARRAY_BUFFER, Mesh.ColourId);
-            glVertexAttribPointer(2u, 4u, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), nullptr);
-            glVertexBindingDivisor(2u, 1u);
-
-            glBindBuffer(GL_ARRAY_BUFFER, Mesh.ModelId);
-            for (unsigned int Column = 0u; Column < 4u; ++Column) {
-                glVertexAttribPointer(
-                        3u + Column, 4u, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
-                        (GLvoid*) (Column * sizeof(glm::vec4))
-                );
-                glVertexBindingDivisor(3u + Column, 1u);
-            }
-
-            glUniform1i((GLint) ColourCodeId, (GLint) Mesh.ColourCode);
+            glUniform1i((GLint) ColourCodeId, (GLint) Engine->GetRegistry().any_of<Shadow>(Entity));
             glDrawElementsInstanced(
                     GL_TRIANGLES, (GLsizei) Mesh.Indices.size(),
                     GL_UNSIGNED_INT, nullptr, Mesh.InstanceCount
             );
-
-            if (Mesh.bTransparent) {
-                glDepthMask(GL_TRUE);
-                glDisable(GL_BLEND);
-            }
         }
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
 
         glUniform1i((GLint) ColourCodeId, 2);
         glWindowPos2f((float) WindowWidth * 0.01f, (float) WindowHeight * 0.9f);
@@ -129,10 +94,10 @@ namespace Misty::Core {
     void RenderModule::GetUniformLocations() noexcept {
         ViewMatrixId = glGetUniformLocation(ProgramId, "ViewMatrix");
         ProjectionMatrixId = glGetUniformLocation(ProgramId, "ProjectionMatrix");
-        ShadowMatrixId = glGetUniformLocation(ProgramId, "ShadowMatrix");
-        LightColourId = glGetUniformLocation(ProgramId, "LightColour");
+        ShadowPositionId = glGetUniformLocation(ProgramId, "ShadowPosition");
         LightPositionId = glGetUniformLocation(ProgramId, "LightPosition");
         ViewPositionId = glGetUniformLocation(ProgramId, "ViewPosition");
+        LightColourId = glGetUniformLocation(ProgramId, "LightColour");
         ColourCodeId = glGetUniformLocation(ProgramId, "ColourCode");
     }
 
@@ -142,6 +107,48 @@ namespace Misty::Core {
 
         FpsLabel << std::fixed << *static_cast<const float*>(Engine->Listen(this, Utils::MistyEvent::GET_AVERAGE_FPS));
         return FpsLabel.str();
+    }
+
+    void RenderModule::RebindAttributes(const Mesh& Mesh) noexcept {
+        glBindBuffer(GL_ARRAY_BUFFER, Mesh.ColourId);
+        std::memcpy(
+                glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY),
+                Mesh.Colours.data(),
+                Mesh.Colours.size() * sizeof(glm::vec4)
+        );
+        glUnmapBuffer(GL_ARRAY_BUFFER);
+
+        glBindBuffer(GL_ARRAY_BUFFER, Mesh.ModelId);
+        std::memcpy(
+                glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY),
+                Mesh.Models.data(),
+                Mesh.Models.size() * sizeof(glm::mat4)
+        );
+        glUnmapBuffer(GL_ARRAY_BUFFER);
+    }
+
+    void RenderModule::AssociateAttributes(const Mesh& Mesh) noexcept {
+        glBindBuffer(GL_ARRAY_BUFFER, Mesh.VboId);
+        glVertexAttribPointer(0u, 4u, GL_FLOAT, GL_FALSE, 0u, nullptr);
+        glVertexAttribPointer(
+                1u, 3u, GL_FLOAT, GL_FALSE, 3u * sizeof(GLfloat),
+                (GLvoid*) (Mesh.Vertices.size() * sizeof(GLfloat))
+        );
+
+        glBindBuffer(GL_ARRAY_BUFFER, Mesh.ColourId);
+        glVertexAttribPointer(2u, 4u, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), nullptr);
+        glVertexBindingDivisor(2u, 1u);
+
+        glBindBuffer(GL_ARRAY_BUFFER, Mesh.ModelId);
+        for (unsigned int Column = 0u; Column < 4u; ++Column) {
+            glVertexAttribPointer(
+                    3u + Column, 4u, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
+                    (GLvoid*) (Column * sizeof(glm::vec4))
+            );
+            glVertexBindingDivisor(3u + Column, 1u);
+        }
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Mesh.EboId);
     }
 
     GLuint RenderModule::LoadSingleShader(const char* const ShaderFilePath, const bool& bIsVertex) noexcept {
@@ -216,7 +223,7 @@ namespace Misty::Core {
         glGenVertexArrays(1u, &VaoId);
         glBindVertexArray(VaoId);
 
-        for (auto&& [Entity, Mesh] : Engine->GetRegistry().view<Mesh>().each()) {
+        for (const auto&& [Entity, Mesh] : Engine->GetRegistry().view<Mesh>().each()) {
             glGenBuffers(1u, &Mesh.VboId);
             glBindBuffer(GL_ARRAY_BUFFER, Mesh.VboId);
             glBufferData(
@@ -244,7 +251,7 @@ namespace Misty::Core {
                     GL_ARRAY_BUFFER,
                     (GLsizeiptr) (Mesh.Colours.size() * sizeof(glm::vec4)),
                     Mesh.Colours.data(),
-                    GL_STATIC_DRAW
+                    GL_DYNAMIC_DRAW
             );
 
             glGenBuffers(1u, &Mesh.ModelId);
@@ -253,7 +260,7 @@ namespace Misty::Core {
                     GL_ARRAY_BUFFER,
                     (GLsizeiptr) (Mesh.Models.size() * sizeof(glm::mat4)),
                     Mesh.Models.data(),
-                    GL_STATIC_DRAW
+                    GL_DYNAMIC_DRAW
             );
 
             glGenBuffers(1u, &Mesh.EboId);
@@ -284,7 +291,7 @@ namespace Misty::Core {
         glBindBuffer(GL_ARRAY_BUFFER, 0u);
 
         std::vector<GLuint> Ids;
-        for (auto&& [Entity, Mesh] : Engine->GetRegistry().view<const Mesh>().each()) {
+        for (const auto&& [Entity, Mesh] : Engine->GetRegistry().view<const Mesh>().each()) {
             Ids.push_back(Mesh.VboId);
             Ids.push_back(Mesh.ColourId);
             Ids.push_back(Mesh.ModelId);

@@ -1,6 +1,7 @@
 #ifndef MISTY_ENGINE_H
 #define MISTY_ENGINE_H
 
+#include <Misty/Core/Components.h>
 #include <Misty/Core/TimeModule.h>
 #include <Misty/Core/ControlsModule.h>
 #include <Misty/Core/RenderModule.h>
