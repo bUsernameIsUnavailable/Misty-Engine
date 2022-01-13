@@ -30,8 +30,9 @@ namespace Misty::Core {
         glutInitWindowSize((int) WindowWidth, (int) WindowHeight);
         glutInitWindowPosition(100, 30);
         glutInitDisplayMode(GLUT_RGBA | bDoubleBuffer * GLUT_DOUBLE | GLUT_DEPTH);
-
         CHECK(WindowId = glutCreateWindow("Misty Engine"), "GLUT failed to create a window!");
+
+        glewExperimental = GL_TRUE;
         CHECK(glewInit() == GLEW_OK, "GLEW failed to initialise!");
 
         glutTimerFunc(0u, RedrawCallback, 1);

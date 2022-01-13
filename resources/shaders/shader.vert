@@ -2,8 +2,9 @@
 
 
 layout(location = 0u) in mediump vec4 in_Position;
-layout(location = 1u) in lowp vec4 in_Color;
-layout(location = 2u) in lowp vec3 in_Normal;
+layout(location = 1u) in lowp vec3 in_Normal;
+layout(location = 2u) in lowp vec4 in_Color;
+layout(location = 3u) in mediump mat4 in_Model;
 
 out lowp vec4 ex_Color;
 
@@ -25,7 +26,7 @@ void main() {
             break;
 
         default:
-            gl_Position = PerspectiveMatrix * in_Position;
+            gl_Position = PerspectiveMatrix * in_Model * in_Position;
 
             vec3 Normal = normalize(mat3(PerspectiveMatrix) * in_Normal);
             vec3 LightDirection = normalize(vec3(PerspectiveMatrix * LightPosition - gl_Position));

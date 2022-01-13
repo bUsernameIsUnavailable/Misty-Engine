@@ -11,7 +11,7 @@ namespace Misty::Core {
         Engine = GetListener<class Engine>();
         CHECK(Engine, "Engine is not an event listener!");
 
-        glBlendFunci(0u, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -57,18 +57,43 @@ namespace Misty::Core {
         ) + glm::mat4(ShadowPlaneEquation.x + ShadowPlaneEquation.y + ShadowPlaneEquation.z + ShadowPlaneEquation.w);
         glUniformMatrix4fv((GLint) ShadowMatrixId, 1, GL_FALSE, &ShadowMatrix[0u][0u]);
 
+        Engine->GetRegistry().sort<Misty::Core::Mesh>([](const Mesh& Mesh1, const Mesh& Mesh2) {
+            return Mesh1.bTransparent < Mesh2.bTransparent;
+        });
         for (auto&& [Entity, Mesh] : Engine->GetRegistry().view<const Mesh>().each()) {
             if (Mesh.bTransparent) {
                 glEnable(GL_BLEND);
                 glDepthMask(GL_FALSE);
             }
 
-            glBindBuffer(GL_ARRAY_BUFFER, Mesh.VboId);
+            glBindVertexArray(VaoId);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Mesh.EboId);
-            AssociateAttributePointers();
+
+            glBindBuffer(GL_ARRAY_BUFFER, Mesh.VboId);
+            glVertexAttribPointer(0u, 4u, GL_FLOAT, GL_FALSE, 0u, nullptr);
+            glVertexAttribPointer(
+                    1u, 3u, GL_FLOAT, GL_FALSE, 3u * sizeof(GLfloat),
+                    (GLvoid*) (Mesh.Vertices.size() * sizeof(GLfloat))
+            );
+
+            glBindBuffer(GL_ARRAY_BUFFER, Mesh.ColourId);
+            glVertexAttribPointer(2u, 4u, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), nullptr);
+            glVertexBindingDivisor(2u, 1u);
+
+            glBindBuffer(GL_ARRAY_BUFFER, Mesh.ModelId);
+            for (unsigned int Column = 0u; Column < 4u; ++Column) {
+                glVertexAttribPointer(
+                        3u + Column, 4u, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
+                        (GLvoid*) (Column * sizeof(glm::vec4))
+                );
+                glVertexBindingDivisor(3u + Column, 1u);
+            }
 
             glUniform1i((GLint) ColourCodeId, (GLint) Mesh.ColourCode);
-            glDrawElements(GL_TRIANGLES, (GLsizei) Mesh.Indices.size(), GL_UNSIGNED_BYTE, nullptr);
+            glDrawElementsInstanced(
+                    GL_TRIANGLES, (GLsizei) Mesh.Indices.size(),
+                    GL_UNSIGNED_INT, nullptr, Mesh.InstanceCount
+            );
 
             if (Mesh.bTransparent) {
                 glDepthMask(GL_TRUE);
@@ -193,38 +218,78 @@ namespace Misty::Core {
         for (auto&& [Entity, Mesh] : Engine->GetRegistry().view<Mesh>().each()) {
             glGenBuffers(1u, &Mesh.VboId);
             glBindBuffer(GL_ARRAY_BUFFER, Mesh.VboId);
-            glBufferData(GL_ARRAY_BUFFER, Mesh.GetVertexSize(), Mesh.Vertices.data(), GL_STATIC_DRAW);
+            glBufferData(
+                    GL_ARRAY_BUFFER,
+                    (GLsizeiptr) ((Mesh.Vertices.size() + Mesh.Normals.size()) * sizeof(GLfloat)),
+                    nullptr,
+                    GL_STATIC_DRAW
+            );
+            glBufferSubData(
+                    GL_ARRAY_BUFFER,
+                    0u,
+                    (GLsizeiptr) (Mesh.Vertices.size() * sizeof(GLfloat)),
+                    Mesh.Vertices.data()
+            );
+            glBufferSubData(
+                    GL_ARRAY_BUFFER,
+                    (GLsizeiptr) (Mesh.Vertices.size() * sizeof(GLfloat)),
+                    (GLsizeiptr) (Mesh.Normals.size() * sizeof(GLfloat)),
+                    Mesh.Normals.data()
+            );
+
+            glGenBuffers(1u, &Mesh.ColourId);
+            glBindBuffer(GL_ARRAY_BUFFER, Mesh.ColourId);
+            glBufferData(
+                    GL_ARRAY_BUFFER,
+                    (GLsizeiptr) (Mesh.Colours.size() * sizeof(glm::vec4)),
+                    Mesh.Colours.data(),
+                    GL_STATIC_DRAW
+            );
+
+            glGenBuffers(1u, &Mesh.ModelId);
+            glBindBuffer(GL_ARRAY_BUFFER, Mesh.ModelId);
+            glBufferData(
+                    GL_ARRAY_BUFFER,
+                    (GLsizeiptr) (Mesh.Models.size() * sizeof(glm::mat4)),
+                    Mesh.Models.data(),
+                    GL_STATIC_DRAW
+            );
 
             glGenBuffers(1u, &Mesh.EboId);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Mesh.EboId);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, Mesh.GetIndexSize(), Mesh.Indices.data(), GL_STATIC_DRAW);
+            glBufferData(
+                    GL_ELEMENT_ARRAY_BUFFER,
+                    (GLsizeiptr) (Mesh.Indices.size() * sizeof(GLuint)),
+                    Mesh.Indices.data(),
+                    GL_STATIC_DRAW
+            );
         }
 
         glEnableVertexAttribArray(0u);
         glEnableVertexAttribArray(1u);
         glEnableVertexAttribArray(2u);
-    }
-
-    void RenderModule::AssociateAttributePointers() noexcept {
-        glVertexAttribPointer(0u, 4u, GL_FLOAT, GL_FALSE, 11u * sizeof(GLfloat), nullptr);
-        glVertexAttribPointer(1u, 4u, GL_FLOAT, GL_FALSE, 11u * sizeof(GLfloat), (GLvoid*) (4u * sizeof(GLfloat)));
-        glVertexAttribPointer(2u, 3u, GL_FLOAT, GL_FALSE, 11u * sizeof(GLfloat), (GLvoid*) (8u * sizeof(GLfloat)));
+        for (unsigned int Column = 0u; Column < 4u; ++Column) {
+            glEnableVertexAttribArray(3u + Column);
+        }
     }
 
     void RenderModule::DestroyVbo() noexcept {
+        for (unsigned int Column = 4u; Column > 0u; --Column) {
+            glDisableVertexAttribArray(2u + Column);
+        }
         glDisableVertexAttribArray(2u);
         glDisableVertexAttribArray(1u);
         glDisableVertexAttribArray(0u);
         glBindBuffer(GL_ARRAY_BUFFER, 0u);
 
-        std::vector<GLuint> VboIds;
-        std::vector<GLuint> EboIds;
+        std::vector<GLuint> Ids;
         for (auto&& [Entity, Mesh] : Engine->GetRegistry().view<const Mesh>().each()) {
-            VboIds.push_back(Mesh.VboId);
-            EboIds.push_back(Mesh.EboId);
+            Ids.push_back(Mesh.VboId);
+            Ids.push_back(Mesh.ColourId);
+            Ids.push_back(Mesh.ModelId);
+            Ids.push_back(Mesh.EboId);
         }
-        glDeleteBuffers((GLsizei) VboIds.size(), VboIds.data());
-        glDeleteBuffers((GLsizei) EboIds.size(), EboIds.data());
+        glDeleteBuffers((GLsizei) Ids.size(), Ids.data());
 
         glBindVertexArray(0u);
         glDeleteVertexArrays(1u, &VaoId);
