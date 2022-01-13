@@ -33,12 +33,16 @@ namespace Misty::Utils {
         IEventListener* Listener = nullptr;
 
     protected:
+        std::string Name;
+
         template <class T>
         T* GetListener() const noexcept { return dynamic_cast<T*>(Listener); }
 
     public:
         virtual void Start() noexcept = 0;
         virtual void SetListener(IEventListener* const NewListener) noexcept { Listener = NewListener; }
+
+        [[nodiscard]] const std::string& GetName() const noexcept { return Name; }
     };
 }
 

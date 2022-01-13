@@ -80,7 +80,7 @@ namespace Misty::Core {
     }
 
     void* Engine::Listen(Utils::IModule* const Module, const Utils::MistyEvent& Event) noexcept {
-        std::fprintf(stdout, "Event: %s ---> %s\n", typeid(*Module).name(), MistyEventNames.at(Event).c_str());
+        std::fprintf(stdout, "Event: %s ---> %s\n", Module->GetName().c_str(), MistyEventNames.at(Event).c_str());
 
         switch (Event) {
             case Utils::MistyEvent::GET_CAMERA_DEPTH:

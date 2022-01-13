@@ -8,6 +8,7 @@ namespace Misty::Core {
 
 
     void RenderModule::Start() noexcept {
+        Name = "Renderer";
         Engine = GetListener<class Engine>();
         CHECK(Engine, "Engine is not an event listener!");
 

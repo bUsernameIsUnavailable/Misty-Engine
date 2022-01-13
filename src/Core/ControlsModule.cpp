@@ -8,6 +8,7 @@ namespace Misty::Core {
 
 
     void ControlsModule::Start() noexcept {
+        Name = "Input";
         Engine = GetListener<class Engine>();
         CHECK(Engine, "Engine is not an event listener!");
     }

@@ -12,6 +12,7 @@ namespace Misty::Core {
 
 
     void TimeModule::Start() noexcept {
+        Name = "Clock";
         Engine = GetListener<class Engine>();
         CHECK(Engine, "Engine is not an event listener!");
     }

@@ -5,7 +5,7 @@
 
 
 namespace Misty::Core {
-    struct IComponent {};
+    struct IComponent { protected: IComponent() = default; };
 
 
     struct Mesh final : IComponent {
