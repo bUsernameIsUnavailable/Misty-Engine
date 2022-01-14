@@ -100,6 +100,7 @@ Misty Engine has been built using the following libraries:
 
 * [freeglut](https://www.transmissionzero.co.uk/software/freeglut-devel/)
 * [GLEW](http://glew.sourceforge.net/)
+* [GLM](https://github.com/g-truc/glm)
 * [SOIL](https://github.com/littlstar/soil)
 * [EnTT](https://github.com/skypjack/entt)
 
