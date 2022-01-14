@@ -2,18 +2,15 @@
 
 
 namespace Misty::Core {
-    bool Engine::bIsRunning = false;
-
-
-    void RedrawCallback(const int Value = 1) {
-        if (Value == 0)
+    void RedrawCallback(const int Value = 0) {
+        if (Value == -1)
             return;
 
         if (Engine::Get()->GetWindowId() != -1) {
             glutPostRedisplay();
         }
 
-        glutTimerFunc(0u, RedrawCallback, 1);
+        glutTimerFunc(0u, RedrawCallback, Value);
     }
 
 
@@ -23,20 +20,18 @@ namespace Misty::Core {
         Renderer->SetListener(this);
     }
 
-    void Engine::Initialise(int* const Argcp, char** const Argv) {
-        glutInit(Argcp, Argv);
-
+    void Engine::Initialise() {
         glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
         glutInitWindowSize((int) WindowWidth, (int) WindowHeight);
         glutInitWindowPosition(100, 30);
-        glutInitDisplayMode(GLUT_RGBA | bDoubleBuffer * GLUT_DOUBLE | GLUT_DEPTH);
+        glutInitDisplayMode(bDoubleBuffer * GLUT_DOUBLE | GLUT_DEPTH | GLUT_WINDOW_RGBA);
         CHECK(WindowId = glutCreateWindow("Misty Engine"), "GLUT failed to create a window!");
 
         glewExperimental = GL_TRUE;
         CHECK(glewInit() == GLEW_OK, "GLEW failed to initialise!");
 
-        glutTimerFunc(0u, RedrawCallback, 1);
-        glutTimerFunc(0u, TimeModule::CalculateFpsCallback, 1);
+        glutTimerFunc(0u, RedrawCallback, 0);
+        glutTimerFunc(0u, TimeModule::CalculateFpsCallback, 0);
 
         glutKeyboardFunc([](const unsigned char Key, const int X, const int Y) noexcept {
             ControlsModule::Get()->ProcessKeyboardKeys(Key, X, Y);
@@ -55,14 +50,15 @@ namespace Misty::Core {
     }
 
     void Engine::Start(int* const Argcp, char** const Argv) {
-        CHECK(!bIsRunning, "Engine has already started!");
-        Initialise(Argcp, Argv);
+        glutInit(Argcp, Argv);
+        CHECK(!bRunning, "Engine has already started!");
+        Initialise();
 
         Clock->Start();
         Input->Start();
         Renderer->Start();
 
-        bIsRunning = true;
+        bRunning = true;
     }
 
     void Engine::Update() noexcept {
@@ -75,12 +71,13 @@ namespace Misty::Core {
         Renderer->DestroyVbo();
 
         WindowId = -1;
-        bIsRunning = false;
+        bRunning = false;
         Registry.clear();
     }
 
     void* Engine::Listen(Utils::IModule* const Module, const Utils::MistyEvent& Event) noexcept {
-        std::fprintf(stdout, "Event: %s ---> %s\n", Module->GetName().c_str(), MistyEventNames.at(Event).c_str());
+        const std::string& ModuleName = Module ? Module->GetName() : "Client";
+        std::fprintf(stdout, "Event: %s ---> %s\n", ModuleName.c_str(), MistyEventNames.at(Event).c_str());
 
         switch (Event) {
             case Utils::MistyEvent::GET_CAMERA_DEPTH:

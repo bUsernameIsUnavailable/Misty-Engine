@@ -18,12 +18,12 @@ namespace Misty::Core {
         GLuint ColourCodeId = 0u;
 
         glm::vec3 CameraPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 ReferencePoint = glm::vec3(0.0f, 0.0f, 100.0f);
+        glm::vec3 ReferencePoint = glm::vec3(0.0f, 0.0f, 10000.0f);
         glm::vec3 NormalisedUp = glm::vec3(0.0f, 0.0f, 1.0f);
 
         glm::vec3 Frustum = glm::vec3(45.0f, 1.77777777778f, 0.1f);
         glm::vec4 ShadowPosition = glm::vec4(0.0f, 0.0f, 1.0f, -1.0f);
-        glm::vec4 LightPosition = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        glm::vec4 LightPosition = glm::vec4(500.0f, 0.0f, 400.0f, 0.0f);
 
         glm::mat4 ViewMatrix = glm::mat4(0.0f);
         glm::mat4 ProjectionMatrix = glm::mat4(0.0f);

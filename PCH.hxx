@@ -8,6 +8,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <thread>
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>

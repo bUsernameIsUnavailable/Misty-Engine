@@ -24,11 +24,11 @@ namespace Misty::Core {
                 break;
 
             case '+':
-                CameraDepth += 5.0f;
+                CameraDepth += 500.0f;
                 break;
 
             case '-':
-                CameraDepth -= 5.0f;
+                CameraDepth -= 500.0f;
                 break;
 
             default:
@@ -51,11 +51,11 @@ namespace Misty::Core {
                 break;
 
             case GLUT_KEY_UP:
-                Vertical += 0.05f;
+                Vertical += 0.01f;
                 break;
 
             case GLUT_KEY_DOWN:
-                Vertical -= 0.05f;
+                Vertical -= 0.01f;
                 break;
 
             default:

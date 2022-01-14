@@ -12,9 +12,9 @@ namespace Misty::Core {
         Engine = GetListener<class Engine>();
         CHECK(Engine, "Engine is not an event listener!");
 
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_DEPTH_TEST);
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glClearColor(0.9f, 0.9f, 0.9f, 0.0f);
 
         CreateShaders();
         CreateVbo();
@@ -31,8 +31,8 @@ namespace Misty::Core {
         const float& Vertical = *static_cast<const float*>(
                 Engine->Listen(this, Utils::MistyEvent::GET_VERTICAL));
         CameraPosition = CameraDepth * glm::vec3(
-                std::cos(Horizontal) * (10.0f + std::cos(Vertical)),
-                std::sin(Horizontal) * (10.0f + std::cos(Vertical)),
+                std::cos(Horizontal) * std::cos(Vertical),
+                std::sin(Horizontal) * std::cos(Vertical),
                 std::sin(Vertical)
         ) + ReferencePoint;
         ViewMatrix = glm::lookAt(CameraPosition, ReferencePoint, NormalisedUp);
@@ -49,6 +49,9 @@ namespace Misty::Core {
         glUniform3f((GLint) ViewPositionId, CameraPosition.x, CameraPosition.y, CameraPosition.z);
         glUniform4f((GLint) LightColourId, 1.0f, 1.0f, 1.0f, 1.0f);
 
+        Engine->GetRegistry().sort<Mesh>([](const Mesh& Mesh1, const Mesh& Mesh2) {
+            return Mesh1.bBlend < Mesh2.bBlend;
+        });
         for (const auto&& [Entity, Mesh] : Engine->GetRegistry().view<const Mesh>().each()) {
             if (Mesh.bBlend) {
                 glEnable(GL_BLEND);

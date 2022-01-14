@@ -15,7 +15,7 @@ void main() {
             break;
 
         case 2:
-            out_Color = vec4(0.0f, 1.0f, 0.0f, 1.0f);
+            out_Color = vec4(0.1f, 0.8f, 0.1f, 1.0f);
             break;
 
         default:

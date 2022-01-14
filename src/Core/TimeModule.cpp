@@ -27,8 +27,8 @@ namespace Misty::Core {
         TotalFpsSumPerSecond += 1.0f / DeltaFrame;
     }
 
-    void TimeModule::CalculateFpsCallback(const int Value = 1) noexcept {
-        if (Value == 0)
+    void TimeModule::CalculateFpsCallback(const int Value = 0) noexcept {
+        if (Value == -1)
             return;
 
         if (TicksPerSecond != 0u) {
@@ -37,6 +37,6 @@ namespace Misty::Core {
         TotalFpsSumPerSecond = 0.0f;
         TicksPerSecond = 0u;
 
-        glutTimerFunc(100u, CalculateFpsCallback, 1);
+        glutTimerFunc(100u, CalculateFpsCallback, Value);
     }
 }

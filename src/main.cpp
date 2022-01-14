@@ -2,128 +2,119 @@
 
 
 namespace Misty::Client {
-    auto* const Engine = Misty::Core::Engine::Get();
+    auto* const ClientEngine = Misty::Core::Engine::Get();
+
+    static int CubeMovementMode = 1;
+    static constexpr unsigned short CubeGridWidth = 1000u;
+    static constexpr unsigned short CubeGridHeight = 1000u;
+    static constexpr unsigned short CubeGridWidthHalf = CubeGridWidth / 2u;
+    static constexpr unsigned short CubeGridHeightHalf = CubeGridHeight / 2u;
 
 
-    void MoveCubes(const int Value = 1) noexcept {
-        if (Value == 0)
-            return;
+    void CreateCubes() noexcept {
+        entt::entity Cube = ClientEngine->GetRegistry().create();
+        Core::Mesh CubeMesh(std::vector<GLfloat>({
+            -50.0f, -50.0f, 50.0f, 1.0f,
+            50.0f, -50.0f, 50.0f, 1.0f,
+            50.0f, 50.0f, 50.0f, 1.0f,
+            -50.0f, 50.0f, 50.0f, 1.0f,
+            -50.0f, -50.0f, 150.0f, 1.0f,
+            50.0f, -50.0f, 150.0f, 1.0f,
+            50.0f, 50.0f, 150.0f, 1.0f,
+            -50.0f, 50.0f, 150.0f, 1.0f
+        }), std::vector<GLfloat>({
+            -1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f
+        }), std::vector<GLuint>({
+            1u, 2u, 0u, 2u, 0u, 3u,
+            2u, 3u, 6u, 6u, 3u, 7u,
+            7u, 3u, 4u, 4u, 3u, 0u,
+            4u, 0u, 5u, 5u, 0u, 1u,
+            1u, 2u, 5u, 5u, 2u, 6u,
+            5u, 6u, 4u, 4u, 6u, 7u
+        }));
 
-        static short Slice = 0;
-        Slice += 10;
+        CubeMesh.bBlend = false;
+        for (unsigned short Width = 0u; Width < CubeGridWidth; ++Width) {
+            for (unsigned short Height = 0u; Height < CubeGridHeight; ++Height) {
+                ++CubeMesh.InstanceCount;
+                CubeMesh.Colours.emplace_back(0.2f, 0.8f, 0.9f, 1.0f);
+                CubeMesh.Models.emplace_back(1.0f);
+            }
+        }
+        ClientEngine->GetRegistry().emplace<Core::Mesh>(Cube, CubeMesh);
+        ClientEngine->GetRegistry().emplace<Core::Moving>(Cube);
+    }
 
-        for (const auto&&[Entity, Mesh]: Engine->GetRegistry().view<Core::Mesh, const Core::Moving>().each()) {
-            for (unsigned int Index1 = 0u; Index1 < 100u; ++Index1) {
-                for (unsigned int Index2 = 0u; Index2 < 100u; ++Index2) {
-                    const float &PositionX = 100.0f * (float) ((signed) Index1 - 50);
-                    const float &PositionY = 100.0f * (float) ((signed) Index2 - 50);
-                    const float &SquareRoot = std::sqrt(
-                            std::abs(PositionX * PositionX + PositionY * PositionY - (float) (Slice * Slice))
-                    );
+    void MoveCubes(int Value = CubeMovementMode) noexcept {
+        if (Value > 0) {
+            static long long Slice = 0u;
+            Slice += (long long) (240.0f / *static_cast<const float *>(
+                    ClientEngine->Listen(nullptr, Misty::Utils::MistyEvent::GET_AVERAGE_FPS)
+            ) + 10.0f) * (Value == CubeMovementMode);
 
-                    Mesh.Models[100u * Index1 + Index2] = glm::rotate(
-                            glm::translate(
-                                    glm::mat4(1.0f),
-                                    glm::vec3(
-                                            PositionX,
-                                            PositionY,
-                                            2000.0f / std::sin(0.00314f * SquareRoot)
-                                    )
-                            ),
-                            (float) std::atan2(PositionY, PositionX),
-                            glm::vec3(0.0f, 0.0f, 1.0f)
-                    );
+            for (const auto&& [Entity, Mesh]
+                : ClientEngine->GetRegistry().view<Core::Mesh, const Core::Moving>().each()
+            ) {
+                for (unsigned short Width = 0u; Width < CubeGridWidth; ++Width) {
+                    for (unsigned short Height = 0u; Height < CubeGridHeight; ++Height) {
+                        const float& PositionX = (float) (signed) (50u * (Width - CubeGridWidthHalf));
+                        const float& PositionY = (float) (signed) (50u * (Height - CubeGridHeightHalf));
+                        const float& SumOfSquares = PositionX * PositionX + PositionY * PositionY;
+
+                        Mesh.Models[CubeGridHeight * Width + Height] = glm::translate(glm::mat4(1.0f), {
+                            PositionX * 5.0f,
+                            PositionY * 5.0f,
+                            10000000.0f * std::sin(2.0f * PI * 0.001f * std::sqrt(
+                                    std::abs(SumOfSquares + (float) ((Value % 2 * 2 - 1) * Slice * Slice))
+                            )) / (std::sqrt(SumOfSquares) + 1.0f)
+                        });
+                    }
                 }
             }
         }
 
-        glutTimerFunc(0u, MoveCubes, 1);
+        Value = CubeMovementMode;
+        glutTimerFunc(0u, MoveCubes, Value);
+    }
+
+    void CreateCubesMovementMenu() noexcept {
+        glutCreateMenu([](const int Value) {
+            CubeMovementMode = (Value != -1) * Value - (Value == -1) * CubeMovementMode;
+        });
+        glutAddMenuEntry("Inwards", 1);
+        glutAddMenuEntry("Outwards", 2);
+        glutAddMenuEntry("Toggle Pause", -1);
+        glutAttachMenu(GLUT_RIGHT_BUTTON);
     }
 }
 
+
+using namespace Misty::Client;
+
 int main(int argc, char** const argv) {
-    Misty::Core::Engine* const Misty = Misty::Client::Engine;
+    Misty::Core::Engine* const Misty = ClientEngine;
     Misty->UseDoubleBuffer(true);
+    CreateCubes();
 
-    entt::entity Cube = Misty->GetRegistry().create();
-    Misty::Core::Mesh CubeMesh(std::vector<GLfloat>({
-        -50.0f, -50.0f, 50.0f, 1.0f,
-        50.0f, -50.0f, 50.0f, 1.0f,
-        50.0f, 50.0f, 50.0f, 1.0f,
-        -50.0f, 50.0f, 50.0f, 1.0f,
-        -50.0f, -50.0f, 150.0f, 1.0f,
-        50.0f, -50.0f, 150.0f, 1.0f,
-        50.0f, 50.0f, 150.0f, 1.0f,
-        -50.0f, 50.0f, 150.0f, 1.0f
-    }), std::vector<GLfloat>({
-        -1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f
-    }), std::vector<GLuint>({
-        1u, 2u, 0u, 2u, 0u, 3u,
-        2u, 3u, 6u, 6u, 3u, 7u,
-        7u, 3u, 4u, 4u, 3u, 0u,
-        4u, 0u, 5u, 5u, 0u, 1u,
-        1u, 2u, 5u, 5u, 2u, 6u,
-        5u, 6u, 4u, 4u, 6u, 7u
-    }));
-    CubeMesh.bBlend = false;
-    for (unsigned int Index = 0u; Index < 10000u; ++Index) {
-        ++CubeMesh.InstanceCount;
-        CubeMesh.Colours.emplace_back(1.0f, 0.8f, 0.4f, 1.0f);
-        CubeMesh.Models.emplace_back(1.0f);
-    }
-    Misty->GetRegistry().emplace<Misty::Core::Mesh>(Cube, CubeMesh);
-    Misty->GetRegistry().emplace<Misty::Core::Moving>(Cube);
+    std::thread MainThread([&Misty, &argc, &argv]() {
+        Misty->Start(&argc, argv);
+        CreateCubesMovementMenu();
+        std::thread MoveCubesThread(MoveCubes, CubeMovementMode);
 
-    entt::entity Pyramid = Misty->GetRegistry().create();
-    Misty::Core::Mesh PyramidMesh(std::vector<GLfloat>({
-        -40.0f, -69.28f, 70.0f, 1.0f,
-        40.0f, -69.28f, 70.0f, 1.0f,
-        80.0f, 0.0f, 70.0f, 1.0f,
-        40.0f, 69.28f, 70.0f, 1.0f,
-        -40.0f, 69.28f, 70.0f, 1.0f,
-        -80.0f, 0.0f, 70.0f, 1.0f,
-        0.0f, 0.0f, 170.0f, 1.0f
-    }), std::vector<GLfloat>({
-        -40.0f, -69.28f, 80.0f,
-        40.0f, -69.28f, 80.0f,
-        80.0f, 0.0f, 80.0f,
-        40.0f, 69.28f, 80.0f,
-        -40.0f, 69.28f, 80.0f,
-        -80.0f, 0.0f, 80.0f,
-        0.0f, 0.0f, 1.0f
-    }), std::vector<GLuint>({
-        0u, 1u, 6u,
-        1u, 2u, 6u,
-        2u, 3u, 6u,
-        3u, 4u, 6u,
-        4u, 5u, 6u,
-        5u, 0u, 6u
-    }));
-    ++PyramidMesh.InstanceCount;
-    PyramidMesh.Colours.emplace_back(0.1f, 1.0f, 0.2f, 1.0f);
-    PyramidMesh.Models.emplace_back(1.0f);
-    PyramidMesh.bBlend = true;
-    Misty->GetRegistry().emplace<Misty::Core::Mesh>(Pyramid, PyramidMesh);
+        while (Misty->IsRunning()) {
+            Misty->Update();
+        }
 
-    entt::entity Sphere = Misty->GetRegistry().create(); //TODO
-
-    Misty->GetRegistry().sort<Misty::Core::Mesh>([](const Misty::Core::Mesh& Mesh1, const Misty::Core::Mesh& Mesh2) {
-        return Mesh1.bBlend < Mesh2.bBlend;
+        MoveCubesThread.join();
     });
 
-    Misty->Start(&argc, argv);
-    glutTimerFunc(0u, Misty::Client::MoveCubes, 1);
-
-    while (Misty::Core::Engine::IsRunning()) {
-        Misty->Update();
-    }
-
+    MainThread.join();
     return EXIT_SUCCESS;
 }

@@ -2,6 +2,10 @@
 #define MISTY_MACROS_H
 
 
+#ifndef PI
+#define PI 3.14159265359
+#endif
+
 #ifndef NDEBUG
 #include <exception>
 
