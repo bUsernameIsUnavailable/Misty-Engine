@@ -3,8 +3,8 @@
 
 # Misty Engine
 
-[![MIT License][license-shield]][license-url] <br/>
-[![Stargazers][stars-shield]][stars-url] <br/>
+[![MIT License][license-shield]][license-url]
+[![Stargazers][stars-shield]][stars-url]
 
 <details open>
     <summary>Table of Contents</summary>
@@ -39,7 +39,7 @@ This engine features the following:
 * Multithreading support for more efficiency
 * An FPS counter to keep track of performant (or not) the engine runs
 * The ability to run on both Windows and Linux based operating systems
-* No comments whatsoever (it's self-documented)
+* No comments whatsoever [(it's self-documented)](https://preview.redd.it/ntpdw49i7vm41.png?width=960&crop=smart&auto=webp&s=731d2584d06f8b7682551f48f6caf9b0d8f5ff20)
 
 Of course, Misty is a far cry from an engine that could be used for actual projects.
 This was more of a personal exercise than to make something useful and I've learnt quite a lot in the time spent developing it.
