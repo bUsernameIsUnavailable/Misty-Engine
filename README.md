@@ -31,8 +31,8 @@ Misty is a bare-bones 3D graphics engine developed by a lazy student in 3 weeks 
 It serves as the final project for the Computer Graphics course, where the objective is to try creating a scene using all the taught concepts.
 
 This engine features the following:
-* Separate modules which can communicate with each other indirectly via the engine itself as a mediator;
-* Singletons for classes that should only have a single instance at once;
+* Separate modules which can communicate with each other indirectly via the engine itself as a mediator
+* Singletons for classes that should only have a single instance at once
 * A basic logging system to keep track of each module's requests from the engine
 * Helpful macros used for debugging or global constants
 * Precompiled headers for shorter build times
