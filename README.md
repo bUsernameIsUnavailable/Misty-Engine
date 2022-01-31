@@ -3,7 +3,7 @@
 
 # Misty Engine
 
-[![MIT License][license-shield]][license-url]
+[![GPL-3.0 License][license-shield]][license-url]
 [![Stargazers][stars-shield]][stars-url]
 
 <details open>
